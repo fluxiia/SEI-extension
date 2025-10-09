@@ -3,6 +3,7 @@ const apiKeyInput = document.getElementById("apiKey");
 const modelInput = document.getElementById("model");
 const temperatureInput = document.getElementById("temperature");
 const saveStatus = document.getElementById("saveStatus");
+const floatingButtonInput = document.getElementById("floatingButtonEnabled");
 
 function setStatus(message, isError = false) {
   saveStatus.textContent = message;
@@ -14,12 +15,14 @@ function loadSettings() {
     {
       apiKey: "",
       model: "gpt-3.5-turbo",
-      temperature: 0.2
+      temperature: 0.2,
+      floatingButtonEnabled: true
     },
     (settings) => {
       apiKeyInput.value = settings.apiKey;
       modelInput.value = settings.model;
       temperatureInput.value = settings.temperature;
+      floatingButtonInput.checked = Boolean(settings.floatingButtonEnabled);
     }
   );
 }
@@ -36,7 +39,9 @@ form.addEventListener("submit", (event) => {
     return;
   }
 
-  chrome.storage.sync.set({ apiKey, model, temperature }, () => {
+  const floatingButtonEnabled = floatingButtonInput.checked;
+
+  chrome.storage.sync.set({ apiKey, model, temperature, floatingButtonEnabled }, () => {
     setStatus("Configurações salvas!");
     setTimeout(() => setStatus(""), 2500);
   });

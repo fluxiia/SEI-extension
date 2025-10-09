@@ -37,12 +37,33 @@ label {
   font-weight: 600;
 }
 
-input {
+input[type="text"],
+input[type="password"],
+input[type="number"] {
   padding: 8px;
   border-radius: 6px;
   border: 1px solid #cbd2d9;
   font-size: 0.95rem;
   font-family: inherit;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+}
+
+.checkbox-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #0d6efd;
+}
+
+.hint {
+  margin-top: -4px;
+  font-size: 0.85rem;
+  color: #52606d;
 }
 
 button {
