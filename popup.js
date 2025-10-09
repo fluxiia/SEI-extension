@@ -6,6 +6,7 @@ const statusMessage = document.getElementById("statusMessage");
 const resultSection = document.getElementById("resultSection");
 const responseTextEl = document.getElementById("responseText");
 const useResponseButton = document.getElementById("useResponseButton");
+const defaultUseResponseLabel = useResponseButton.textContent;
 
 async function loadSettings() {
   return new Promise((resolve) => {
@@ -28,6 +29,91 @@ function setStatus(message, isError = false) {
 function toggleLoading(isLoading) {
   generateButton.disabled = isLoading;
   generateButton.textContent = isLoading ? "Gerando..." : "Gerar resposta";
+}
+
+async function applyResponseToPage(responseText) {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+  if (!tab || !tab.id) {
+    throw new Error("Não foi possível encontrar a aba do despacho aberta.");
+  }
+
+  let injectionResults;
+
+  try {
+    injectionResults = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: (text) => {
+        const ckeditor = window.CKEDITOR;
+
+        if (!ckeditor || !ckeditor.instances) {
+          return { success: false, error: "CKEditor não encontrado na página atual." };
+        }
+
+        const escapeHtml = (value) =>
+          value
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+
+        const findEditableEditor = () => {
+          return Object.values(ckeditor.instances).find((instance) => !instance.readOnly) || null;
+        };
+
+        const editor = ckeditor.instances.txaEditor_506 || findEditableEditor();
+
+        if (!editor) {
+          return { success: false, error: "Editor editável do despacho não foi localizado." };
+        }
+
+        const trimmed = text.trim();
+
+        if (!trimmed) {
+          editor.setData("");
+          if (typeof editor.fire === "function") {
+            editor.fire("change");
+          }
+          return { success: true };
+        }
+
+        const paragraphs = trimmed
+          .split(/\n{2,}/)
+          .map((paragraph) => paragraph.trim())
+          .filter(Boolean);
+
+        const html = (paragraphs.length > 0 ? paragraphs : [trimmed])
+          .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, "<br>")}</p>`)
+          .join("");
+
+        editor.setData(html, {
+          callback: () => {
+            try {
+              editor.focus();
+            } catch (focusError) {
+              console.debug("Não foi possível focar o editor do SEI", focusError);
+            }
+            if (typeof editor.fire === "function") {
+              editor.fire("change");
+            }
+          }
+        });
+
+        return { success: true };
+      },
+      args: [responseText]
+    });
+  } catch (error) {
+    throw new Error("Não foi possível aplicar o texto automaticamente nesta página.");
+  }
+
+  const [injectionResult] = injectionResults || [];
+
+  if (!injectionResult || !injectionResult.result?.success) {
+    const errorMessage = injectionResult?.result?.error || "Não foi possível inserir o texto na página do SEI.";
+    throw new Error(errorMessage);
+  }
 }
 
 async function callOpenAi({ apiKey, model, temperature }, despacho, extra) {
@@ -98,13 +184,26 @@ async function handleGenerate() {
 
     responseTextEl.textContent = responseText;
     resultSection.hidden = false;
-    setStatus("Resposta gerada com sucesso!");
+    setStatus("Resposta gerada com sucesso! Revise e aplique no despacho.");
 
-    useResponseButton.onclick = () => {
-      dispatchText.value = responseText;
-      promptExtra.value = "";
-      resultSection.hidden = true;
-      setStatus("Resposta aplicada ao despacho.");
+    useResponseButton.onclick = async () => {
+      useResponseButton.disabled = true;
+      useResponseButton.textContent = "Aplicando...";
+      setStatus("Inserindo a resposta no SEI...");
+
+      try {
+        await applyResponseToPage(responseText);
+        dispatchText.value = "";
+        promptExtra.value = "";
+        resultSection.hidden = true;
+        setStatus("Resposta inserida no despacho com sucesso!");
+      } catch (error) {
+        console.error(error);
+        setStatus(`Erro ao aplicar resposta: ${error.message}`, true);
+      } finally {
+        useResponseButton.disabled = false;
+        useResponseButton.textContent = defaultUseResponseLabel;
+      }
     };
   } catch (error) {
     console.error(error);
