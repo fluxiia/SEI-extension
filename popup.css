@@ -1,0 +1,96 @@
+:root {
+  color-scheme: light dark;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  margin: 0;
+  min-width: 340px;
+  background: #f7f7f7;
+  color: #1f2933;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+h1 {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+label {
+  font-weight: 600;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 90px;
+  max-height: 280px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #cbd2d9;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+button {
+  background: #0d6efd;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  background: #9aa5b1;
+}
+
+button:hover:not(:disabled) {
+  background: #0b5ed7;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.actions .secondary {
+  background: transparent;
+  color: #0d6efd;
+  border: 1px solid #0d6efd;
+}
+
+.actions .secondary:hover:not(:disabled) {
+  background: rgba(13, 110, 253, 0.08);
+}
+
+#statusMessage {
+  min-height: 1.2em;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+#resultSection {
+  border-top: 1px solid #dfe3e8;
+  padding-top: 12px;
+}
+
+#responseText {
+  white-space: pre-wrap;
+  background: #fff;
+  border-radius: 6px;
+  border: 1px solid #dfe3e8;
+  padding: 12px;
+  font-size: 0.95rem;
+  max-height: 260px;
+  overflow-y: auto;
+}
