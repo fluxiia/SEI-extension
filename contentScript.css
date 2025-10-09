@@ -1,0 +1,27 @@
+#sei-despacho-ia-floating-button {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2147483647;
+  background: #0d6efd;
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  box-shadow: 0 10px 30px rgba(13, 110, 253, 0.35);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+#sei-despacho-ia-floating-button:hover {
+  background: #0b5ed7;
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px rgba(11, 94, 215, 0.4);
+}
+
+#sei-despacho-ia-floating-button:active {
+  transform: translateY(0);
+  box-shadow: 0 8px 20px rgba(11, 94, 215, 0.35);
+}
