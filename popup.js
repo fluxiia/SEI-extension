@@ -38,6 +38,10 @@ async function applyResponseToPage(responseText) {
     throw new Error("Não foi possível encontrar a aba do despacho aberta.");
   }
 
+  if (!tab.url || !/\/sei\//i.test(tab.url)) {
+    throw new Error("Abra o editor de despacho do SEI na aba atual antes de aplicar a resposta.");
+  }
+
   let injectionResults;
 
   try {
@@ -57,6 +61,39 @@ async function applyResponseToPage(responseText) {
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#39;");
+
+        const removeDiacritics = (value) =>
+          value.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+        const shouldUseLeftClass = (paragraph, index, total) => {
+          const normalized = removeDiacritics(paragraph).toLowerCase();
+          const closingPatterns = [
+            "atenciosamente",
+            "cordialmente",
+            "respeitosamente",
+            "sem mais",
+            "assinado",
+            "assinatura"
+          ];
+
+          if (closingPatterns.some((pattern) => normalized.startsWith(pattern))) {
+            return true;
+          }
+
+          if (normalized.includes("assinado eletronicamente")) {
+            return true;
+          }
+
+          if (/^s[ãa]o\s+lu[íi]s/i.test(paragraph)) {
+            return true;
+          }
+
+          if (index === total - 1 && paragraph.length <= 90 && !/[.!?]$/.test(paragraph.trim())) {
+            return true;
+          }
+
+          return false;
+        };
 
         const findEditableEditor = () => {
           return Object.values(ckeditor.instances).find((instance) => !instance.readOnly) || null;
@@ -83,8 +120,16 @@ async function applyResponseToPage(responseText) {
           .map((paragraph) => paragraph.trim())
           .filter(Boolean);
 
-        const html = (paragraphs.length > 0 ? paragraphs : [trimmed])
-          .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, "<br>")}</p>`)
+        const formattedParagraphs = paragraphs.length > 0 ? paragraphs : [trimmed];
+
+        const html = formattedParagraphs
+          .map((paragraph, index) => {
+            const className = shouldUseLeftClass(paragraph, index, formattedParagraphs.length)
+              ? "Tabela_Texto_Alinhado_Esquerda"
+              : "Texto_Justificado_Recuo_Primeira_Linha";
+
+            return `<p class="${className}">${escapeHtml(paragraph).replace(/\n/g, "<br>")}</p>`;
+          })
           .join("");
 
         editor.setData(html, {
@@ -105,7 +150,14 @@ async function applyResponseToPage(responseText) {
       args: [responseText]
     });
   } catch (error) {
-    throw new Error("Não foi possível aplicar o texto automaticamente nesta página.");
+    console.error("Falha ao injetar script na página do SEI", error);
+
+    const message =
+      typeof error?.message === "string" && error.message.includes("Cannot access contents")
+        ? "A extensão não conseguiu acessar esta aba. Recarregue o editor do SEI e tente novamente."
+        : error?.message || "Não foi possível aplicar o texto automaticamente nesta página.";
+
+    throw new Error(message);
   }
 
   const [injectionResult] = injectionResults || [];

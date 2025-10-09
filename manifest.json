@@ -4,7 +4,10 @@
   "description": "Gera respostas para despachos usando uma API de IA generativa.",
   "version": "1.0.0",
   "permissions": ["storage", "scripting", "activeTab", "tabs"],
-  "host_permissions": ["https://api.openai.com/*"],
+  "host_permissions": [
+    "https://api.openai.com/*",
+    "*://*/sei/*"
+  ],
   "background": {
     "service_worker": "background.js"
   },
