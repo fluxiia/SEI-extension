@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Configurações • Despacho IA</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Configurações da IA</h1>
+      <p>
+        Insira a chave de API e personalize o modelo que será utilizado para gerar as respostas.
+        Os dados ficam armazenados apenas no seu navegador por meio do <code>chrome.storage.sync</code>.
+      </p>
+      <form id="settingsForm">
+        <label for="apiKey">Chave da API</label>
+        <input
+          type="password"
+          id="apiKey"
+          name="apiKey"
+          placeholder="sk-..."
+          autocomplete="off"
+          required
+        />
+
+        <label for="model">Modelo</label>
+        <input
+          type="text"
+          id="model"
+          name="model"
+          value="gpt-3.5-turbo"
+          required
+        />
+
+        <label for="temperature">Temperatura</label>
+        <input
+          type="number"
+          id="temperature"
+          name="temperature"
+          min="0"
+          max="1"
+          step="0.1"
+          value="0.2"
+          required
+        />
+
+        <button type="submit">Salvar configurações</button>
+        <p id="saveStatus" role="status" aria-live="polite"></p>
+      </form>
+    </main>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Despacho IA</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Responder despacho</h1>
+      <label for="dispatchText">Despacho</label>
+      <textarea id="dispatchText" placeholder="Cole aqui o despacho..."></textarea>
+
+      <label for="promptExtra">Contexto adicional (opcional)</label>
+      <textarea
+        id="promptExtra"
+        placeholder="Inclua detalhes adicionais que devem ser considerados na resposta"
+      ></textarea>
+
+      <div class="actions">
+        <button id="generateButton" type="button">Gerar resposta</button>
+        <button id="openOptionsButton" type="button" class="secondary">
+          Configurar chave da IA
+        </button>
+      </div>
+
+      <p id="statusMessage" role="status" aria-live="polite"></p>
+
+      <section id="resultSection" hidden>
+        <header>
+          <h2>Resposta sugerida</h2>
+        </header>
+        <pre id="responseText"></pre>
+        <button id="useResponseButton" type="button">Usar resposta no despacho</button>
+      </section>
+    </main>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>
