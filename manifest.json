@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Despacho IA Responder",
+  "description": "Gera respostas para despachos usando uma API de IA generativa.",
+  "version": "1.0.0",
+  "permissions": ["storage", "scripting", "activeTab", "tabs"],
+  "host_permissions": [
+    "https://api.openai.com/*",
+    "*://*/sei/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*/sei/*"],
+      "js": ["contentScript.js"],
+      "css": ["contentScript.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Gerar resposta para despacho"
+  },
+  "options_page": "options.html"
+}
