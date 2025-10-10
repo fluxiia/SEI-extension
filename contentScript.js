@@ -19,8 +19,8 @@ if (window.top === window.self) {
     const button = document.createElement("button");
     button.id = BUTTON_ID;
     button.type = "button";
-    button.textContent = "Gerar resposta";
-    button.title = "Abrir a extensão Despacho IA";
+    button.textContent = "🧠 SEI Smart";
+    button.title = "Abrir o SEI Smart - Assistente de Despachos IA";
     button.addEventListener("click", () => {
       chrome.runtime.sendMessage({ action: "openPopup" });
     });

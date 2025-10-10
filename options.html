@@ -3,61 +3,154 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Configurações • Despacho IA</title>
+    <title>Configurações • SEI Smart</title>
     <link rel="stylesheet" href="options.css" />
   </head>
   <body>
     <main>
-      <h1>Configurações da IA</h1>
-      <p>
-        Insira a chave de API e personalize o modelo que será utilizado para gerar as respostas.
-        Os dados ficam armazenados apenas no seu navegador por meio do <code>chrome.storage.sync</code>.
-      </p>
+      <div class="header">
+        <h1>⚙️ SEI Smart - Configurações</h1>
+        <p class="subtitle">
+          Configure a API OpenAI para gerar respostas inteligentes nos seus despachos do SEI.
+          Suas credenciais ficam armazenadas localmente no navegador.
+        </p>
+      </div>
+
       <form id="settingsForm">
-        <label for="apiKey">Chave da API</label>
-        <input
-          type="password"
-          id="apiKey"
-          name="apiKey"
-          placeholder="sk-..."
-          autocomplete="off"
-          required
-        />
+        <div class="form-section">
+          <h2 class="section-title">🔐 Autenticação</h2>
+          
+          <div class="form-group">
+            <label for="apiKey">Chave da API OpenAI</label>
+            <input
+              type="password"
+              id="apiKey"
+              name="apiKey"
+              placeholder="sk-proj-xxxxxxxxxxxxxxxxxxxxxxxxxx"
+              autocomplete="off"
+              required
+            />
+            <p class="field-hint">Obtenha sua chave em <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a></p>
+          </div>
+        </div>
 
-        <label for="model">Modelo</label>
-        <input
-          type="text"
-          id="model"
-          name="model"
-          value="gpt-3.5-turbo"
-          required
-        />
+        <div class="form-section">
+          <h2 class="section-title">🤖 Parâmetros do Modelo</h2>
+          
+          <div class="form-group">
+            <label for="model">Modelo de IA</label>
+            <select id="model" name="model" required>
+              <option value="gpt-4o">GPT-4o (Recomendado - Mais rápido e eficiente)</option>
+              <option value="gpt-4o-mini">GPT-4o Mini (Econômico e rápido)</option>
+              <option value="gpt-4-turbo">GPT-4 Turbo (Alto desempenho)</option>
+              <option value="gpt-4">GPT-4 (Máxima qualidade)</option>
+              <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Rápido e econômico)</option>
+              <option value="gpt-3.5-turbo-16k">GPT-3.5 Turbo 16k (Textos longos)</option>
+            </select>
+            <p class="field-hint">Modelos mais avançados geram respostas melhores, mas custam mais</p>
+          </div>
 
-        <label for="temperature">Temperatura</label>
-        <input
-          type="number"
-          id="temperature"
-          name="temperature"
-          min="0"
-          max="1"
-          step="0.1"
-          value="0.2"
-          required
-        />
+          <div class="form-group">
+            <label for="temperature">
+              Temperatura (Criatividade)
+              <span class="temp-value" id="tempValue">0.2</span>
+            </label>
+            <input
+              type="range"
+              id="temperature"
+              name="temperature"
+              min="0"
+              max="1"
+              step="0.1"
+              value="0.2"
+              required
+            />
+            <div class="range-labels">
+              <span>Mais preciso</span>
+              <span>Mais criativo</span>
+            </div>
+            <p class="field-hint">Valores baixos geram respostas mais consistentes e objetivas</p>
+          </div>
+        </div>
 
-        <label class="checkbox-row" for="floatingButtonEnabled">
-          <input
-            type="checkbox"
-            id="floatingButtonEnabled"
-            name="floatingButtonEnabled"
-            checked
-          />
-          <span>Mostrar botão flutuante nas janelas do SEI</span>
-        </label>
-        <p class="hint">O botão abre a interface da extensão sem depender da barra do navegador.</p>
+        <div class="form-section">
+          <h2 class="section-title">👤 Dados do Signatário</h2>
+          
+          <div class="form-group">
+            <label for="signatarioNome">Nome Completo do Signatário</label>
+            <input
+              type="text"
+              id="signatarioNome"
+              name="signatarioNome"
+              placeholder="Ex: João Silva Santos"
+              autocomplete="off"
+            />
+            <p class="field-hint">Nome que aparecerá no final dos documentos</p>
+          </div>
 
-        <button type="submit">Salvar configurações</button>
-        <p id="saveStatus" role="status" aria-live="polite"></p>
+          <div class="form-group">
+            <label for="signatarioCargo">Cargo do Signatário</label>
+            <input
+              type="text"
+              id="signatarioCargo"
+              name="signatarioCargo"
+              placeholder="Ex: Assessor Administrativo"
+              autocomplete="off"
+            />
+            <p class="field-hint">Cargo que aparecerá abaixo do nome</p>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h2 class="section-title">🏛️ Estrutura do Órgão</h2>
+          
+          <div class="form-group">
+            <label for="orgaoNome">Nome do Órgão</label>
+            <input
+              type="text"
+              id="orgaoNome"
+              name="orgaoNome"
+              placeholder="Ex: Secretaria de Estado de Transparência e Controle"
+              autocomplete="off"
+            />
+            <p class="field-hint">Órgão do Governo do Estado do Maranhão onde você trabalha</p>
+          </div>
+
+          <div class="form-group">
+            <label for="orgaoSetores">Setores e Gestores</label>
+            <textarea
+              id="orgaoSetores"
+              name="orgaoSetores"
+              rows="5"
+              placeholder="Liste os setores e seus gestores, um por linha.&#10;Formato: Nome do Setor - Nome do Gestor&#10;&#10;Exemplos:&#10;Secretaria Adjunta de Transparência - SEATRAN/STC - Maria Silva Costa&#10;Gabinete do Secretário - João Santos Oliveira&#10;Coordenadoria de Controle Interno - Pedro Costa"
+              autocomplete="off"
+            ></textarea>
+            <p class="field-hint">
+              <strong>Formato:</strong> Nome do Setor - Nome do Gestor (um por linha)<br>
+              Exemplo: Secretaria Adjunta de Transparência - SEATRAN/STC - Maria Silva Costa
+            </p>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h2 class="section-title">🎨 Interface</h2>
+          
+          <label class="checkbox-row" for="floatingButtonEnabled">
+            <input
+              type="checkbox"
+              id="floatingButtonEnabled"
+              name="floatingButtonEnabled"
+              checked
+            />
+            <span>Mostrar botão flutuante nas janelas do SEI</span>
+          </label>
+          <p class="field-hint">O botão permite acessar a extensão sem depender da barra do navegador</p>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">💾 Salvar configurações</button>
+          <p id="saveStatus" role="status" aria-live="polite"></p>
+        </div>
       </form>
     </main>
     <script type="module" src="options.js"></script>

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Despacho IA Responder",
-  "description": "Gera respostas para despachos usando uma API de IA generativa.",
+  "name": "SEI Smart",
+  "description": "Assistente inteligente para gerar respostas profissionais em despachos do SEI com IA.",
   "version": "1.0.0",
   "permissions": ["storage", "scripting", "activeTab", "tabs"],
   "host_permissions": [
@@ -21,7 +21,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Gerar resposta para despacho"
+    "default_title": "SEI Smart - Gerar despacho com IA"
   },
   "options_page": "options.html"
 }

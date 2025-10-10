@@ -3,13 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Despacho IA</title>
+    <title>SEI Smart</title>
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
     <main>
       <header class="top-bar">
-        <h1>Responder despacho</h1>
+        <div class="header-content">
+          <h1>🧠 SEI Smart</h1>
+          <p class="header-subtitle">Assistente inteligente para seus despachos</p>
+        </div>
         <button
           id="openOptionsButton"
           type="button"
@@ -24,27 +27,74 @@
           </svg>
         </button>
       </header>
-      <label for="dispatchText">Despacho</label>
-      <textarea id="dispatchText" placeholder="Cole aqui o despacho..."></textarea>
 
-      <label for="promptExtra">Contexto adicional (opcional)</label>
-      <textarea
-        id="promptExtra"
-        placeholder="Inclua detalhes adicionais que devem ser considerados na resposta"
-      ></textarea>
+      <div class="form-group">
+        <div class="label-with-action">
+          <label for="dispatchText">📄 Despacho Recebido</label>
+          <button id="captureTextButton" type="button" class="capture-button" title="Capturar texto do documento aberto no SEI">
+            📋 Capturar do SEI
+          </button>
+        </div>
+        <textarea id="dispatchText" placeholder="Cole aqui o texto do despacho que você recebeu..."></textarea>
+        
+        <div id="captureSourceSection" class="capture-source-section" hidden>
+          <label for="captureSourceTab">📥 Capturar de qual janela?</label>
+          <select id="captureSourceTab" class="target-select">
+            <option value="">Carregando janelas...</option>
+          </select>
+          <div class="capture-actions">
+            <button id="confirmCaptureButton" type="button" class="btn-capture-confirm">
+              ✅ Capturar
+            </button>
+            <button id="cancelCaptureButton" type="button" class="btn-capture-cancel">
+              ❌ Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="promptExtra">💡 Contexto Adicional (opcional)</label>
+        <textarea
+          id="promptExtra"
+          placeholder="Adicione informações extras que devem ser consideradas na resposta (prazos, referências, observações...)"
+        ></textarea>
+      </div>
 
       <div class="actions">
-        <button id="generateButton" type="button" class="primary-button">Gerar resposta</button>
+        <button id="generateButton" type="button" class="primary-button">
+          ✨ Gerar Resposta com IA
+        </button>
+        <button id="writeManuallyButton" type="button" class="secondary-button">
+          ✍️ Escrever Manualmente
+        </button>
       </div>
 
       <p id="statusMessage" role="status" aria-live="polite"></p>
 
       <section id="resultSection" hidden>
-        <header>
-          <h2>Resposta sugerida</h2>
-        </header>
-        <pre id="responseText"></pre>
-        <button id="useResponseButton" type="button">Usar resposta no despacho</button>
+        <div class="result-header">
+          <h2 id="resultTitle">✅ Resposta Sugerida</h2>
+          <p class="edit-hint" id="resultHint">💡 Você pode editar o texto antes de usar</p>
+        </div>
+        <textarea id="responseText" class="response-textarea" placeholder="Digite ou cole seu texto aqui..."></textarea>
+        
+        <div class="form-group">
+          <div class="label-with-action">
+            <label for="targetTab">🎯 Janela de Destino</label>
+            <button id="reloadTargetTabsButton" type="button" class="capture-button" title="Recarregar lista de janelas">
+              🔄 Atualizar
+            </button>
+          </div>
+          <select id="targetTab" class="target-select">
+            <option value="">Detectar automaticamente</option>
+          </select>
+          <p class="field-hint">Selecione em qual janela do SEI deseja colar a resposta</p>
+        </div>
+
+        <button id="useResponseButton" type="button" class="use-button">
+          📋 Usar esta resposta no despacho
+        </button>
       </section>
     </main>
     <script type="module" src="popup.js"></script>

@@ -2,30 +2,56 @@ const form = document.getElementById("settingsForm");
 const apiKeyInput = document.getElementById("apiKey");
 const modelInput = document.getElementById("model");
 const temperatureInput = document.getElementById("temperature");
+const tempValue = document.getElementById("tempValue");
 const saveStatus = document.getElementById("saveStatus");
 const floatingButtonInput = document.getElementById("floatingButtonEnabled");
+const signatarioNomeInput = document.getElementById("signatarioNome");
+const signatarioCargoInput = document.getElementById("signatarioCargo");
+const orgaoNomeInput = document.getElementById("orgaoNome");
+const orgaoSetoresInput = document.getElementById("orgaoSetores");
 
 function setStatus(message, isError = false) {
   saveStatus.textContent = message;
-  saveStatus.style.color = isError ? "#b42318" : "inherit";
+  saveStatus.className = isError ? "error" : "success";
+  
+  setTimeout(() => {
+    saveStatus.textContent = "";
+    saveStatus.className = "";
+  }, 3000);
+}
+
+function updateTempValue() {
+  tempValue.textContent = temperatureInput.value;
 }
 
 function loadSettings() {
   chrome.storage.sync.get(
     {
       apiKey: "",
-      model: "gpt-3.5-turbo",
+      model: "gpt-4o",
       temperature: 0.2,
-      floatingButtonEnabled: true
+      floatingButtonEnabled: true,
+      signatarioNome: "",
+      signatarioCargo: "",
+      orgaoNome: "",
+      orgaoSetores: ""
     },
     (settings) => {
       apiKeyInput.value = settings.apiKey;
       modelInput.value = settings.model;
       temperatureInput.value = settings.temperature;
       floatingButtonInput.checked = Boolean(settings.floatingButtonEnabled);
+      signatarioNomeInput.value = settings.signatarioNome;
+      signatarioCargoInput.value = settings.signatarioCargo;
+      orgaoNomeInput.value = settings.orgaoNome;
+      orgaoSetoresInput.value = settings.orgaoSetores;
+      updateTempValue();
     }
   );
 }
+
+// Atualizar valor da temperatura em tempo real
+temperatureInput.addEventListener("input", updateTempValue);
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -35,15 +61,27 @@ form.addEventListener("submit", (event) => {
   const temperature = Number.parseFloat(temperatureInput.value);
 
   if (!apiKey) {
-    setStatus("Informe uma chave de API válida.", true);
+    setStatus("❌ Informe uma chave de API válida.", true);
     return;
   }
 
   const floatingButtonEnabled = floatingButtonInput.checked;
+  const signatarioNome = signatarioNomeInput.value.trim();
+  const signatarioCargo = signatarioCargoInput.value.trim();
+  const orgaoNome = orgaoNomeInput.value.trim();
+  const orgaoSetores = orgaoSetoresInput.value.trim();
 
-  chrome.storage.sync.set({ apiKey, model, temperature, floatingButtonEnabled }, () => {
-    setStatus("Configurações salvas!");
-    setTimeout(() => setStatus(""), 2500);
+  chrome.storage.sync.set({ 
+    apiKey, 
+    model, 
+    temperature, 
+    floatingButtonEnabled,
+    signatarioNome,
+    signatarioCargo,
+    orgaoNome,
+    orgaoSetores
+  }, () => {
+    setStatus("✅ Configurações salvas com sucesso!");
   });
 });
 
