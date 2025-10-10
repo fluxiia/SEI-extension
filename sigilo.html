@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Sigilo - SEI Smart</title>
+    <link rel="stylesheet" href="popup.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: white;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .sigilo-container {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sigilo-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .sigilo-header h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .sigilo-header p {
+            margin: 5px 0 0;
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .sigilo-tabs {
+            display: flex;
+            background: #f7f7f7;
+            border-bottom: 2px solid #e0e0e0;
+            flex-shrink: 0;
+        }
+
+        .sigilo-tab {
+            flex: 1;
+            padding: 12px 8px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 13px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .sigilo-tab:hover {
+            background: #ececec;
+        }
+
+        .sigilo-tab.active {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            background: white;
+        }
+
+        .sigilo-content {
+            display: none;
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .sigilo-content.active {
+            display: block;
+        }
+
+        .sigilo-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .sigilo-section h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .sigilo-section p {
+            margin: 0 0 15px 0;
+            font-size: 12px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .sigilo-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .sigilo-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .sigilo-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .sigilo-button-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .sigilo-button-primary:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+
+        .sigilo-button-secondary {
+            background: #48bb78;
+            color: white;
+        }
+
+        .sigilo-button-secondary:hover {
+            background: #38a169;
+            transform: translateY(-1px);
+        }
+
+        .sigilo-button-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .sigilo-button-danger:hover {
+            background: #e53e3e;
+            transform: translateY(-1px);
+        }
+
+        .sigilo-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .sigilo-result {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            line-height: 1.5;
+            display: none;
+        }
+
+        .sigilo-result.show {
+            display: block;
+        }
+
+        .sigilo-result.success {
+            background: #c6f6d5;
+            border: 1px solid #9ae6b4;
+            color: #22543d;
+        }
+
+        .sigilo-result.error {
+            background: #fed7d7;
+            border: 1px solid #fc8181;
+            color: #742a2a;
+        }
+
+        .sigilo-result.info {
+            background: #bee3f8;
+            border: 1px solid #90cdf4;
+            color: #2c5282;
+        }
+
+        .sigilo-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .sigilo-stat {
+            text-align: center;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .sigilo-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .sigilo-stat-label {
+            font-size: 11px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .sigilo-alert {
+            padding: 12px;
+            margin-top: 15px;
+            background: #fef5e7;
+            border: 1px solid #f9e79f;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #856404;
+        }
+
+        .sigilo-alert strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .sigilo-footer {
+            padding: 15px 20px;
+            background: #f7f7f7;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .icon {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sigilo-container">
+        <div class="sigilo-header">
+            <h1>🔒 Gerenciar Sigilo</h1>
+            <p>Marque e oculte informações confidenciais</p>
+            
+            <div style="margin-top: 15px;">
+                <label for="targetSeiTab" style="display: block; font-size: 12px; margin-bottom: 5px; opacity: 0.9;">
+                    🎯 Janela do SEI:
+                </label>
+                <select id="targetSeiTab" style="width: 100%; padding: 8px; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; background: rgba(255,255,255,0.2); color: white; font-size: 13px;">
+                    <option value="">Detectar automaticamente</option>
+                </select>
+                <button id="reloadSeiTabs" type="button" style="margin-top: 8px; padding: 6px 12px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; color: white; cursor: pointer; font-size: 12px; width: 100%;">
+                    🔄 Atualizar Lista de Janelas
+                </button>
+            </div>
+        </div>
+
+        <div class="sigilo-tabs">
+            <button class="sigilo-tab active" data-tab="localizar">
+                📍 Localizar
+            </button>
+            <button class="sigilo-tab" data-tab="tarjar">
+                ████ Tarjar
+            </button>
+            <button class="sigilo-tab" data-tab="remover">
+                🗑️ Remover
+            </button>
+            <button class="sigilo-tab" data-tab="guia">
+                📖 Guia
+            </button>
+        </div>
+
+        <!-- Tab: Localizar -->
+        <div class="sigilo-content active" id="tab-localizar">
+            <div class="sigilo-section">
+                <h3>🔍 Localizar Texto Específico</h3>
+                <p>Digite um texto para localizar e marcar como sigiloso em todo o documento.</p>
+                <div class="sigilo-input-group">
+                    <input type="text" 
+                           id="inputTexto" 
+                           class="sigilo-input" 
+                           placeholder="Ex: Nome completo, número de telefone..."
+                           autocomplete="off">
+                    <button id="btnMarcarTexto" class="sigilo-button sigilo-button-primary">
+                        <span class="icon">🔒</span>Marcar
+                    </button>
+                </div>
+                <div id="resultTexto" class="sigilo-result"></div>
+            </div>
+
+            <div class="sigilo-section">
+                <h3>👤 Localizar Dados Pessoais</h3>
+                <p>Localiza automaticamente CPFs e e-mails em todo o documento.</p>
+                <button id="btnMarcarDados" class="sigilo-button sigilo-button-secondary" style="width: 100%;">
+                    <span class="icon">🔍</span>Localizar CPF e E-mails
+                </button>
+                <div id="resultDados" class="sigilo-result"></div>
+            </div>
+
+            <div class="sigilo-stats" id="statsContainer" style="display: none;">
+                <div class="sigilo-stat">
+                    <div class="sigilo-stat-value" id="statMarcas">0</div>
+                    <div class="sigilo-stat-label">Marcas</div>
+                </div>
+                <div class="sigilo-stat">
+                    <div class="sigilo-stat-value" id="statTarjas">0</div>
+                    <div class="sigilo-stat-label">Tarjas</div>
+                </div>
+                <div class="sigilo-stat">
+                    <div class="sigilo-stat-value" id="statTotal">0</div>
+                    <div class="sigilo-stat-label">Total</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Tarjar -->
+        <div class="sigilo-content" id="tab-tarjar">
+            <div class="sigilo-section">
+                <h3>████ Aplicar Tarjas Pretas</h3>
+                <p>Converte todas as marcas de sigilo em tarjas pretas (████) para ocultar visualmente as informações.</p>
+                <button id="btnAplicarTarjas" class="sigilo-button sigilo-button-primary" style="width: 100%;">
+                    <span class="icon">████</span>Aplicar Tarjas
+                </button>
+                <div id="resultTarjas" class="sigilo-result"></div>
+            </div>
+
+            <div class="sigilo-alert">
+                <strong>⚠️ Atenção!</strong>
+                Marcas tarjadas poderão ser revertidas na aba "Remover" somente enquanto o editor estiver aberto.
+                Após salvar e fechar o documento, as tarjas se tornam permanentes.
+            </div>
+
+            <div class="sigilo-stats" id="statsContainerTarjas" style="display: none;">
+                <div class="sigilo-stat">
+                    <div class="sigilo-stat-value" id="statMarcasTarjas">0</div>
+                    <div class="sigilo-stat-label">Marcas</div>
+                </div>
+                <div class="sigilo-stat">
+                    <div class="sigilo-stat-value" id="statTarjasTarjas">0</div>
+                    <div class="sigilo-stat-label">Tarjas</div>
+                </div>
+                <div class="sigilo-stat">
+                    <div class="sigilo-stat-value" id="statTotalTarjas">0</div>
+                    <div class="sigilo-stat-label">Total</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Remover -->
+        <div class="sigilo-content" id="tab-remover">
+            <div class="sigilo-section">
+                <h3>🗑️ Remover Todas as Marcas</h3>
+                <p>Remove todas as marcas de sigilo e tarjas do documento, restaurando o texto original.</p>
+                <button id="btnRemoverMarcas" class="sigilo-button sigilo-button-danger" style="width: 100%;">
+                    <span class="icon">🗑️</span>Remover Todas as Marcas
+                </button>
+                <div id="resultRemover" class="sigilo-result"></div>
+            </div>
+
+            <div class="sigilo-alert">
+                <strong>⚠️ Atenção!</strong>
+                Marcas já tarjadas não poderão ser revertidas após salvar e fechar este editor.
+                Esta ação é irreversível para documentos já salvos.
+            </div>
+        </div>
+
+        <!-- Tab: Guia -->
+        <div class="sigilo-content" id="tab-guia">
+            <div class="sigilo-section">
+                <h3>📖 Como Usar</h3>
+                
+                <h4 style="margin-top: 15px; color: #667eea;">1️⃣ Localizar e Marcar</h4>
+                <p>• Digite um texto específico e clique em "Marcar"<br>
+                   • Use "Localizar CPF e E-mails" para dados pessoais<br>
+                   • As marcas ficam invisíveis mas identificadas no sistema</p>
+
+                <h4 style="margin-top: 15px; color: #667eea;">2️⃣ Aplicar Tarjas</h4>
+                <p>• Converte marcas em tarjas pretas (████)<br>
+                   • Oculta visualmente informações confidenciais<br>
+                   • Reversível enquanto o editor estiver aberto</p>
+
+                <h4 style="margin-top: 15px; color: #667eea;">3️⃣ Remover Marcas</h4>
+                <p>• Remove todas as marcas e tarjas<br>
+                   • Restaura o texto original<br>
+                   • Use antes de salvar se mudar de ideia</p>
+
+                <h4 style="margin-top: 15px; color: #667eea;">💡 Dicas</h4>
+                <p>• Marque primeiro, tarje depois<br>
+                   • Revise antes de tarjar<br>
+                   • Tarjas são permanentes após salvar<br>
+                   • Use para CPF, e-mails, telefones, endereços</p>
+            </div>
+        </div>
+
+        <div class="sigilo-footer">
+            <div style="color: #999; font-size: 12px;">
+                <strong>SEI Smart v1.1.0</strong> | Governo do Maranhão
+            </div>
+            <button id="btnFechar" class="sigilo-button" style="background: #667eea; color: white;">
+                ✅ Concluir
+            </button>
+        </div>
+    </div>
+
+    <script src="sigiloManager.js"></script>
+    <script src="sigilo.js"></script>
+</body>
+</html>
+

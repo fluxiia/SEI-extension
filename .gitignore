@@ -1,0 +1,69 @@
+# SEI Smart - Extensão Chrome
+# Arquivos que NÃO devem ser versionados
+
+# Chave privada da extensão (NUNCA comitar!)
+*.pem
+
+# Arquivos de distribuição
+*.crx
+dist/
+*.zip
+
+# Configurações locais e temporários
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDEs e Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Sistema operacional
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Node (caso adicione build tools futuramente)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Arquivos de backup
+*.bak
+*.backup
+*~
+
+# Arquivos temporários
+tmp/
+temp/
+*.tmp
+
+# Configurações pessoais (chaves de API, etc)
+# NOTA: As chaves são armazenadas via chrome.storage, 
+# mas caso crie arquivos de config local, adicione aqui
+
+# Arquivos de teste
+test-results/
+coverage/
+
+# Cache
+.cache/
+
