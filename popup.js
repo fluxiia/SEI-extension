@@ -919,7 +919,7 @@ async function callOpenAi({ apiKey, model, temperature, signatarioNome, signatar
   // Instruções sobre a estrutura do documento
   const instrucoesEstrutura = `
 
-ESTRUTURA OBRIGATÓRIA DO DOCUMENTO usar tags html para formatação (ordem exata):
+ESTRUTURA OBRIGATÓRIA DO DOCUMENTO (ordem exata):
 
 1. Processo nº: [número do processo] (em negrito e alinhado à esquerda)
 2. Assunto: [assunto do processo] (em negrito)
