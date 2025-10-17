@@ -133,6 +133,82 @@
         </div>
 
         <div class="form-section">
+          <h2 class="section-title">📄 Formato do Documento</h2>
+          
+          <div class="form-group">
+            <label for="documentTemplate">Formato Básico do Documento (Resposta)</label>
+            <textarea
+              id="documentTemplate"
+              name="documentTemplate"
+              rows="8"
+              placeholder="Deixe em branco para usar o formato padrão..."
+            ></textarea>
+            <p class="field-hint">Formato usado para respostas a documentos existentes</p>
+          </div>
+
+          <div class="form-group">
+            <label for="despachoTemplate">Template para Despachos</label>
+            <textarea
+              id="despachoTemplate"
+              name="despachoTemplate"
+              rows="6"
+              placeholder="Template específico para despachos novos..."
+            ></textarea>
+            <p class="field-hint">Template usado quando gerar novos despachos</p>
+          </div>
+
+          <div class="form-group">
+            <label for="oficioTemplate">Template para Ofícios</label>
+            <textarea
+              id="oficioTemplate"
+              name="oficioTemplate"
+              rows="6"
+              placeholder="Template específico para ofícios novos..."
+            ></textarea>
+            <p class="field-hint">Template usado quando gerar novos ofícios</p>
+          </div>
+
+          <div class="form-group">
+            <label for="memorandoTemplate">Template para Memorandos</label>
+            <textarea
+              id="memorandoTemplate"
+              name="memorandoTemplate"
+              rows="6"
+              placeholder="Template específico para memorandos novos..."
+            ></textarea>
+            <p class="field-hint">Template usado quando gerar novos memorandos</p>
+          </div>
+
+          <div class="form-group">
+            <label for="notaTecnicaTemplate">Template para Notas Técnicas</label>
+            <textarea
+              id="notaTecnicaTemplate"
+              name="notaTecnicaTemplate"
+              rows="6"
+              placeholder="Template específico para notas técnicas novas..."
+            ></textarea>
+            <p class="field-hint">Template usado quando gerar novas notas técnicas</p>
+          </div>
+
+          <div class="template-help">
+            <h3>📋 Formato Padrão (usado se não configurar templates):</h3>
+            <ol>
+              <li>Processo nº: [número do processo] (em negrito e alinhado à esquerda)</li>
+              <li>Assunto: [assunto do processo] (em negrito)</li>
+              <li>[LINHA VAZIA]</li>
+              <li>[TÍTULO DO DOCUMENTO EM MAIÚSCULAS - ex: DESPACHO Nº XXX] (alinhado ao centro)</li>
+              <li>[LINHA VAZIA]</li>
+              <li>Ao/À [destinatário - ex: "Ao Gabinete", "À Secretaria Adjunta"]</li>
+              <li>[PARÁGRAFOS DO CORPO DO TEXTO - conteúdo principal do documento]</li>
+              <li>[DUAS LINHAS VAZIAS]</li>
+              <li>São Luís/MA, data da assinatura eletrônica. (alinhado à direita)</li>
+              <li>[LINHA VAZIA]</li>
+              <li>Atenciosamente</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="form-section">
           <h2 class="section-title">🎨 Interface</h2>
           
           <label class="checkbox-row" for="floatingButtonEnabled">

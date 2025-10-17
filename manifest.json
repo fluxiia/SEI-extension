@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SEI Smart",
-  "description": "Assistente inteligente para gerar respostas profissionais em despachos do SEI com IA e gerenciar sigilo.",
+  "description": "Assistente inteligente para gerar respostas profissionais em despachos do SEI com IA.",
   "version": "1.1.0",
   "permissions": ["storage", "scripting", "activeTab", "tabs"],
   "host_permissions": [
@@ -23,11 +23,5 @@
     "default_popup": "popup.html",
     "default_title": "SEI Smart - Gerar despacho com IA"
   },
-  "options_page": "options.html",
-  "web_accessible_resources": [
-    {
-      "resources": ["sigilo.html", "sigilo.js", "sigiloManager.js"],
-      "matches": ["<all_urls>"]
-    }
-  ]
+  "options_page": "options.html"
 }

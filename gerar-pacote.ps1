@@ -31,12 +31,8 @@ $filesToInclude = @(
     "options.html",
     "options.js",
     "options.css",
-    "sigilo.html",
-    "sigilo.js",
-    "sigiloManager.js",
     "README.md",
-    "COMO_INSTALAR.md",
-    "SIGILO.md"
+    "COMO_INSTALAR.md"
 )
 
 # Lista de arquivos opcionais

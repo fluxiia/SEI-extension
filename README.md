@@ -51,16 +51,14 @@ Gera despachos com:
 - **Interface**: Botão flutuante opcional
 
 ### 🎯 Recursos Adicionais
+- **Dois Modos de Uso**: Resposta a documento existente OU criação de novo documento
+- **Múltiplos Tipos**: Despacho, Ofício, Memorando e Nota Técnica
+- **Templates Personalizados**: Configure formatos específicos por tipo de documento
 - **Modo Manual**: Escreva sem IA e formate automaticamente
 - **Edição Livre**: Revise e ajuste o texto gerado antes de usar
 - **Múltiplas Janelas**: Suporte para vários editores SEI abertos
 - **Atalhos**: Ctrl+Enter para gerar rapidamente
 
-### 🔒 Gerenciamento de Sigilo **NOVO!**
-- **Marcação Inteligente**: Marque informações confidenciais
-- **Detecção Automática**: Localiza CPFs e e-mails automaticamente
-- **Tarjas Pretas**: Oculta visualmente dados sigilosos (████)
-- **Controle Total**: Adicione, tarje e remova marcas facilmente
 
 ---
 
@@ -103,43 +101,40 @@ Gera despachos com:
 
 ## 📖 Como Usar
 
-### Método 1: Com IA (Geração Automática)
+### Método 1: Resposta a Documento (Modo Atual)
 
-1. **Abra o editor de despacho** no SEI
-2. **Clique em 🧠 SEI Smart** (botão flutuante ou ícone da extensão)
-3. **Capture ou cole** o despacho recebido
-4. **Adicione contexto** extra (opcional)
-5. **Clique em "✨ Gerar Resposta com IA"**
-6. **Revise e edite** o texto gerado
-7. **Clique em "📋 Usar esta resposta no despacho"**
-8. **Pronto!** O texto é inserido automaticamente
+1. **Selecione "📄 Resposta a Documento"** (modo padrão)
+2. **Abra o editor de despacho** no SEI
+3. **Clique em 🧠 SEI Smart** (botão flutuante ou ícone da extensão)
+4. **Capture ou cole** o despacho recebido
+5. **Adicione contexto** extra (opcional)
+6. **Clique em "✨ Gerar Resposta com IA"**
+7. **Revise e edite** o texto gerado
+8. **Clique em "📋 Usar esta resposta no despacho"**
+9. **Pronto!** O texto é inserido automaticamente
 
-### Método 2: Modo Manual
+### Método 2: Novo Documento (NOVO!)
+
+1. **Selecione "✨ Novo Documento"**
+2. **Escolha o tipo**: Despacho, Ofício, Memorando ou Nota Técnica
+3. **Defina o nome do documento** (ex: "DESPACHO 123/STC")
+4. **Descreva o contexto detalhado**:
+   - Situação administrativa
+   - Destinatário
+   - Objetivo do documento
+   - Processo relacionado
+5. **Adicione informações extras** (opcional)
+6. **Clique em "✨ Gerar Novo Documento"**
+7. **Revise e edite** o documento gerado
+8. **Aplique no SEI** com formatação automática
+
+### Método 3: Modo Manual
 
 1. **Clique em "✍️ Escrever Manualmente"**
 2. **Digite seu texto**
 3. **Clique em "📋 Usar esta resposta no despacho"**
 4. **A formatação é aplicada automaticamente**
 
-### 🔒 Método 3: Gerenciar Sigilo **NOVO!**
-
-1. **Clique em "🔒 Gerenciar Sigilo"** (no popup da extensão)
-2. **Escolha uma opção:**
-
-   **📍 Localizar e Marcar:**
-   - Digite um texto específico (ex: CPF, telefone)
-   - Clique em "Marcar" para adicionar marca de sigilo
-   - Use "Localizar CPF e E-mails" para detecção automática
-
-   **████ Tarjar:**
-   - Clique em "Aplicar Tarjas" para ocultar visualmente
-   - Informações marcadas viram ████████
-
-   **🗑️ Remover:**
-   - Clique em "Remover Todas as Marcas" para reverter
-   - ⚠️ Tarjas são permanentes após salvar o documento
-
-3. **Acompanhe as estatísticas** de marcas e tarjas aplicadas
 
 ---
 

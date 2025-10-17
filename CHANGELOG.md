@@ -9,29 +9,35 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [1.1.0] - 2025-01-10
 
-### 🔒 Nova Funcionalidade: Gerenciamento de Sigilo
+### ✨ Novas Funcionalidades
 
-Adicionado módulo completo para proteção de informações confidenciais em documentos do SEI.
+#### Modo "Novo Documento" 
+- **Toggle de Modo**: Escolha entre "Resposta a Documento" ou "Novo Documento"
+- **Múltiplos Tipos**: Suporte para Despacho, Ofício, Memorando e Nota Técnica
+- **Interface Dinâmica**: Campos se adaptam ao modo selecionado
+- **Contexto Detalhado**: Campo específico para descrever situação, destinatário e objetivo
+- **Validação Inteligente**: Valida campos baseado no modo selecionado
 
-#### Novos Recursos
-- **Marcação de Informações Sigilosas**: Marque textos específicos como confidenciais
-- **Detecção Automática**: Localiza automaticamente CPFs e e-mails no documento
-- **Tarjas Visuais**: Aplica tarjas pretas (████) para ocultar informações
-- **Controle de Marcas**: Adicione, visualize e remova marcas facilmente
-- **Interface Dedicada**: Janela popup com 4 abas (Localizar, Tarjar, Remover, Guia)
-- **Estatísticas em Tempo Real**: Acompanhe quantas marcas e tarjas foram aplicadas
-- **Conformidade LGPD**: Auxilia na proteção de dados pessoais
+#### Templates por Tipo de Documento
+- **Templates Específicos**: Configure formato diferente para cada tipo de documento
+- **Templates na Configuração**: 
+  - Template para Respostas (modo atual)
+  - Template para Despachos
+  - Template para Ofícios
+  - Template para Memorandos
+  - Template para Notas Técnicas
+- **Formato Padrão**: Estrutura padrão se não configurar templates
 
-#### Novos Arquivos
-- `sigiloManager.js` - Lógica de gerenciamento de sigilo
-- `sigilo.js` - Interface e controle da UI
-- `sigilo.html` - Interface visual do módulo
-- `SIGILO.md` - Documentação completa da funcionalidade
+#### Campo para Nome do Documento
+- Adicionado campo para especificar o nome do documento (ex: "DESPACHO 123/STC")
+- O nome fornecido é usado automaticamente como título no documento gerado
+- Campo opcional que aparece na interface principal
 
 #### Melhorias na Interface
-- Botão "🔒 Gerenciar Sigilo" adicionado ao popup principal
-- Design moderno com abas e feedback visual
-- Alertas e avisos sobre permanência das tarjas
+- **Seletor Visual**: Toggle com ícones e descrições para escolher o modo
+- **Campos Condicionais**: Interface se adapta ao modo selecionado
+- **Placeholders Dinâmicos**: Dicas contextuais baseadas no tipo de documento
+- **Botões Adaptativos**: Texto do botão muda baseado no modo
 
 ---
 

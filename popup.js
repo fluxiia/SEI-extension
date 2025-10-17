@@ -1,4 +1,5 @@
 const dispatchText = document.getElementById("dispatchText");
+const documentName = document.getElementById("documentName");
 const promptExtra = document.getElementById("promptExtra");
 const generateButton = document.getElementById("generateButton");
 const writeManuallyButton = document.getElementById("writeManuallyButton");
@@ -17,6 +18,13 @@ const confirmCaptureButton = document.getElementById("confirmCaptureButton");
 const cancelCaptureButton = document.getElementById("cancelCaptureButton");
 const reloadTargetTabsButton = document.getElementById("reloadTargetTabsButton");
 
+// Novos elementos para funcionalidade de novo documento
+const documentTypeSelect = document.getElementById("documentTypeSelect");
+const newDocumentContext = document.getElementById("newDocumentContext");
+const responseModeFields = document.getElementById("responseModeFields");
+const newDocumentFields = document.getElementById("newDocumentFields");
+const additionalContextFields = document.getElementById("additionalContextFields");
+
 async function loadSettings() {
   return new Promise((resolve) => {
     chrome.storage.sync.get(
@@ -27,7 +35,12 @@ async function loadSettings() {
         signatarioNome: "",
         signatarioCargo: "",
         orgaoNome: "",
-        orgaoSetores: ""
+        orgaoSetores: "",
+        documentTemplate: "",
+        despachoTemplate: "",
+        oficioTemplate: "",
+        memorandoTemplate: "",
+        notaTecnicaTemplate: ""
       },
       resolve
     );
@@ -44,6 +57,63 @@ function setStatus(message, isError = false) {
 function toggleLoading(isLoading) {
   generateButton.disabled = isLoading;
   generateButton.textContent = isLoading ? "⏳ Gerando..." : "✨ Gerar Resposta";
+}
+
+// Função para controlar a interface baseada no modo selecionado
+function updateInterfaceMode() {
+  const documentType = document.querySelector('input[name="documentType"]:checked').value;
+  const isNewDocument = documentType === 'new';
+  
+  if (isNewDocument) {
+    // Modo novo documento
+    responseModeFields.style.display = 'none';
+    newDocumentFields.style.display = 'block';
+    additionalContextFields.querySelector('label').textContent = '💡 Informações Adicionais (opcional)';
+    additionalContextFields.querySelector('textarea').placeholder = 'Adicione informações extras que devem ser consideradas (prazos, referências, observações...)';
+    generateButton.textContent = '✨ Gerar Novo Documento';
+    
+    // Atualizar placeholder do contexto baseado no tipo de documento
+    const docType = documentTypeSelect.value;
+    const placeholders = {
+      'despacho': 'Descreva o contexto do despacho: situação administrativa, destinatário, objetivo, processo relacionado...',
+      'oficio': 'Descreva o contexto do ofício: situação, destinatário externo, objetivo, processo relacionado...',
+      'memorando': 'Descreva o contexto do memorando: comunicação interna, destinatário, objetivo, situação...',
+      'nota-tecnica': 'Descreva o contexto da nota técnica: análise técnica, processo, objetivo, fundamentação...'
+    };
+    newDocumentContext.placeholder = placeholders[docType] || placeholders['despacho'];
+    
+  } else {
+    // Modo resposta
+    responseModeFields.style.display = 'block';
+    newDocumentFields.style.display = 'none';
+    additionalContextFields.querySelector('label').textContent = '💡 Contexto Adicional (opcional)';
+    additionalContextFields.querySelector('textarea').placeholder = 'Adicione informações extras que devem ser consideradas na resposta (prazos, referências, observações...)';
+    generateButton.textContent = '✨ Gerar Resposta com IA';
+  }
+}
+
+// Função para validar campos baseado no modo
+function validateFields() {
+  const documentType = document.querySelector('input[name="documentType"]:checked').value;
+  const isNewDocument = documentType === 'new';
+  
+  if (isNewDocument) {
+    // Para novo documento, precisa do contexto
+    const context = newDocumentContext.value.trim();
+    if (!context) {
+      setStatus("⚠️ Descreva o contexto do novo documento antes de gerar.", true);
+      return false;
+    }
+  } else {
+    // Para resposta, precisa do despacho recebido
+    const despacho = dispatchText.value.trim();
+    if (!despacho) {
+      setStatus("⚠️ Cole o texto do despacho antes de gerar a resposta.", true);
+      return false;
+    }
+  }
+  
+  return true;
 }
 
 async function showCaptureSourceSelector() {
@@ -639,7 +709,8 @@ async function applyResponseToPage(responseText) {
         const html = formattedParagraphs
           .map((paragraph, index) => {
             const paraFormat = getParaClass(paragraph, index, formattedParagraphs.length);
-            const content = escapeHtml(paragraph).replace(/\n/g, "<br>");
+            // Não escapar HTML aqui - deixar o CKEditor processar o HTML
+            const content = paragraph.replace(/\n/g, "<br>");
             const finalContent = paraFormat.bold ? `<strong>${content}</strong>` : content;
             return `<p class="${paraFormat.class}">${finalContent}</p>`;
           })
@@ -647,15 +718,24 @@ async function applyResponseToPage(responseText) {
 
         try {
           if (editor && !editor.readOnly) {
+            // Limpar o editor primeiro
+            editor.setData("");
+            
+            // Inserir o HTML formatado
             editor.setData(html);
 
+            // Forçar atualização e sincronização
             setTimeout(() => {
               try {
+                if (typeof editor.updateElement === "function") {
+                  editor.updateElement();
+                }
                 if (typeof editor.focus === "function") {
                   editor.focus();
                 }
                 if (typeof editor.fire === "function") {
                   editor.fire("change");
+                  editor.fire("dataReady");
                 }
               } catch (postError) {}
             }, 100);
@@ -768,7 +848,13 @@ async function applyResponseToPage(responseText) {
 
             const newValue = textarea.value;
 
+            // Garantir que o HTML seja processado corretamente pelo CKEditor
             editor.setData(newValue);
+            
+            // Forçar atualização do CKEditor
+            if (typeof editor.updateElement === 'function') {
+              editor.updateElement();
+            }
 
             setTimeout(() => {
               try {
@@ -890,7 +976,7 @@ function limparDespachoRecebido(texto) {
   return textoLimpo;
 }
 
-async function callOpenAi({ apiKey, model, temperature, signatarioNome, signatarioCargo, orgaoNome, orgaoSetores }, despacho, extra) {
+async function callOpenAi({ apiKey, model, temperature, signatarioNome, signatarioCargo, orgaoNome, orgaoSetores, documentTemplate, despachoTemplate, oficioTemplate, memorandoTemplate, notaTecnicaTemplate }, despacho, extra, nomeDocumento, isNewDocument = false, docType = 'despacho', contexto = '') {
 
   // Construir o contexto organizacional
   let contextoOrganizacional = "Você é um assessor administrativo do Governo do Estado do Maranhão";
@@ -917,7 +1003,40 @@ async function callOpenAi({ apiKey, model, temperature, signatarioNome, signatar
   contextoOrganizacional += "\nConheça a hierarquia e estrutura do órgão para fazer referências adequadas quando necessário.";
 
   // Instruções sobre a estrutura do documento
-  const instrucoesEstrutura = `
+  let instrucoesEstrutura;
+  let templateToUse = '';
+  
+  if (isNewDocument) {
+    // Para novo documento, usar template específico do tipo
+    const templates = {
+      'despacho': despachoTemplate,
+      'oficio': oficioTemplate,
+      'memorando': memorandoTemplate,
+      'nota-tecnica': notaTecnicaTemplate
+    };
+    templateToUse = templates[docType] || '';
+  } else {
+    // Para resposta, usar template geral
+    templateToUse = documentTemplate;
+  }
+  
+  if (templateToUse && templateToUse.trim()) {
+    // Usar formato personalizado se fornecido
+    instrucoesEstrutura = `
+
+ESTRUTURA OBRIGATÓRIA DO DOCUMENTO (use EXATAMENTE este formato):
+
+${templateToUse}
+
+REGRAS DE FORMATAÇÃO:
+- Siga EXATAMENTE a estrutura definida acima
+- O texto deve ser formal, claro e objetivo
+- Identifique o destinatário correto do contexto fornecido
+- Use "Ao" para masculino e "À" para feminino
+`;
+  } else {
+    // Usar formato padrão
+    instrucoesEstrutura = `
 
 ESTRUTURA OBRIGATÓRIA DO DOCUMENTO (ordem exata):
 
@@ -927,7 +1046,7 @@ ESTRUTURA OBRIGATÓRIA DO DOCUMENTO (ordem exata):
 4. [TÍTULO DO DOCUMENTO EM MAIÚSCULAS - ex: DESPACHO Nº XXX] (alinhado ao centro)
 5. [LINHA VAZIA]
 6. Ao/À [destinatário - ex: "Ao Gabinete", "À Secretaria Adjunta"]
-7. [PARÁGRAFOS DO CORPO DO TEXTO - conteúdo principal do despacho]
+7. [PARÁGRAFOS DO CORPO DO TEXTO - conteúdo principal do documento]
 8. [DUAS LINHAS VAZIAS]
 9. São Luís/MA, data da assinatura eletrônica. (alinhado à direita)
 10. [LINHA VAZIA]
@@ -943,6 +1062,7 @@ REGRAS DE FORMATAÇÃO:
 - O texto deve ser formal, claro e objetivo
 - Identifique o destinatário correto do contexto fornecido
 `;
+  }
 
   const messages = [
     {
@@ -951,29 +1071,64 @@ REGRAS DE FORMATAÇÃO:
     },
     {
       role: "user",
-      content: `Elabore um despacho administrativo profissional em resposta ao documento recebido seguindo EXATAMENTE a estrutura definida:
+      content: isNewDocument ? 
+        // Prompt para novo documento
+        `Elabore um novo ${docType.toUpperCase()} administrativo profissional seguindo EXATAMENTE a estrutura definida:
+
+TIPO DE DOCUMENTO: ${docType.toUpperCase()}
+${nomeDocumento ? `NOME DO DOCUMENTO: ${nomeDocumento}` : ''}
+
+CONTEXTO E REQUISITOS:
+${contexto}
+
+${extra ? `INFORMAÇÕES ADICIONAIS:
+${extra}` : ''}
+
+INSTRUÇÕES IMPORTANTES:
+${nomeDocumento ? `- Use "${nomeDocumento}" como título do documento` : `- Use um título apropriado em MAIÚSCULAS (ex: "${docType.toUpperCase()} Nº 31 - SEATRAN/STC")`}
+- Comece com "Processo nº: [número]" (use um número apropriado baseado no contexto)
+- Segunda linha: "Assunto: [assunto]" (extraia do contexto fornecido)
+- Deixe UMA linha vazia
+- Título do documento em MAIÚSCULAS
+- Deixe UMA linha vazia
+- Comece o texto com "Ao" ou "À" seguido do destinatário apropriado (identifique do contexto)
+- Escreva os parágrafos do corpo do texto baseado no contexto fornecido
+- Deixe DUAS linhas vazias antes do fecho
+- Escreva "São Luís/MA, data da assinatura eletrônica." (alinhado à direita)
+- Deixe UMA linha vazia
+- Escreva "Atenciosamente," (alinhado à esquerda)
+- Deixe UMA linha vazia${signatarioNome ? `
+- Escreva "${signatarioNome.toUpperCase()}" (em maiúsculas)` : ''}${signatarioCargo ? `
+- Escreva "${signatarioCargo}"` : ''}
+
+IMPORTANTE: Separe cada item com linhas vazias conforme indicado. Use quebras de linha duplas (<br><br>) para separar parágrafos.` :
+        // Prompt para resposta (modo atual)
+        `Elabore um despacho administrativo profissional em resposta ao documento recebido seguindo EXATAMENTE a estrutura definida:
 
 DESPACHO/DOCUMENTO RECEBIDO:
 ${despacho}
+
+${nomeDocumento ? `NOME DO DOCUMENTO A SER GERADO: ${nomeDocumento}` : ''}
 
 ${extra ? `INFORMAÇÕES ADICIONAIS/CONTEXTO:
 ${extra}` : ''}
 
 INSTRUÇÕES IMPORTANTES:
-1. Comece com "Processo nº: [número]" (extraia do contexto ou use um exemplo)
-2. Segunda linha: "Assunto: [assunto]" (extraia do contexto)
-3. Deixe UMA linha vazia
-4. Título do documento em MAIÚSCULAS (ex: "DESPACHO Nº 31 - SEATRAN/STC")
-5. Deixe UMA linha vazia
-6. Comece o texto com "Ao" ou "À" seguido do destinatário, o destinatário é o setor do despacho recebido
-7. Escreva os parágrafos do corpo do texto
-8. Deixe DUAS linhas vazias antes do fecho
-9. Escreva "São Luís/MA, data da assinatura eletrônica." (alinhado à direita)
-10. Deixe UMA linha vazia
-11. Escreva "Atenciosamente," (alinhado à esquerda)
-12. Deixe UMA linha vazia${signatarioNome ? `
-13. Escreva "${signatarioNome.toUpperCase()}" (em maiúsculas)` : ''}${signatarioCargo ? `
-14. Escreva "${signatarioCargo}"` : ''}
+${nomeDocumento ? `- Use "${nomeDocumento}" como título do documento` : '- Use um título apropriado em MAIÚSCULAS (ex: "DESPACHO Nº 31 - SEATRAN/STC")'}
+- Comece com "Processo nº: [número]" (extraia do contexto ou use um exemplo)
+- Segunda linha: "Assunto: [assunto]" (extraia do contexto)
+- Deixe UMA linha vazia
+- Título do documento em MAIÚSCULAS
+- Deixe UMA linha vazia
+- Comece o texto com "Ao" ou "À" seguido do destinatário, o destinatário é o setor do despacho recebido
+- Escreva os parágrafos do corpo do texto
+- Deixe DUAS linhas vazias antes do fecho
+- Escreva "São Luís/MA, data da assinatura eletrônica." (alinhado à direita)
+- Deixe UMA linha vazia
+- Escreva "Atenciosamente," (alinhado à esquerda)
+- Deixe UMA linha vazia${signatarioNome ? `
+- Escreva "${signatarioNome.toUpperCase()}" (em maiúsculas)` : ''}${signatarioCargo ? `
+- Escreva "${signatarioCargo}"` : ''}
 
 IMPORTANTE: Separe cada item com linhas vazias conforme indicado. Use quebras de linha duplas (<br><br>) para separar parágrafos.`
     }
@@ -1009,12 +1164,23 @@ IMPORTANTE: Separe cada item com linhas vazias conforme indicado. Use quebras de
 }
 
 async function handleGenerate() {
-  const despacho = dispatchText.value.trim();
-  const extra = promptExtra.value.trim();
-
-  if (!despacho) {
-    setStatus("⚠️ Cole o texto do despacho antes de gerar a resposta.", true);
+  // Validar campos baseado no modo
+  if (!validateFields()) {
     return;
+  }
+
+  const documentType = document.querySelector('input[name="documentType"]:checked').value;
+  const isNewDocument = documentType === 'new';
+  const nomeDocumento = documentName.value.trim();
+  const extra = promptExtra.value.trim();
+  
+  let despacho = '';
+  let contexto = '';
+  
+  if (isNewDocument) {
+    contexto = newDocumentContext.value.trim();
+  } else {
+    despacho = dispatchText.value.trim();
   }
 
   const settings = await loadSettings();
@@ -1030,14 +1196,26 @@ async function handleGenerate() {
     setStatus("🤖 Chamando a IA generativa...");
     resultSection.hidden = true;
 
-    // Limpar o despacho recebido antes de enviar para a IA
-    const despachoLimpo = limparDespachoRecebido(despacho);
+    let responseText;
+    
+    if (isNewDocument) {
+      // Para novo documento
+      const docType = documentTypeSelect.value;
+      responseText = await callOpenAi(settings, '', extra, nomeDocumento, isNewDocument, docType, contexto);
+    } else {
+      // Para resposta (modo atual)
+      const despachoLimpo = limparDespachoRecebido(despacho);
+      responseText = await callOpenAi(settings, despachoLimpo, extra, nomeDocumento, isNewDocument);
+    }
 
-    const responseText = await callOpenAi(settings, despachoLimpo, extra);
-
-    // Restaurar títulos para modo IA
-    resultTitle.textContent = "✅ Resposta Sugerida pela IA";
-    resultHint.textContent = "💡 Você pode editar o texto antes de usar";
+    // Atualizar títulos baseado no modo
+    if (isNewDocument) {
+      resultTitle.textContent = "✅ Novo Documento Gerado pela IA";
+      resultHint.textContent = "💡 Você pode editar o documento antes de usar";
+    } else {
+      resultTitle.textContent = "✅ Resposta Sugerida pela IA";
+      resultHint.textContent = "💡 Você pode editar o texto antes de usar";
+    }
 
     responseTextEl.value = responseText;
 
@@ -1068,7 +1246,13 @@ async function handleGenerate() {
 
         await applyResponseToPage(finalText);
 
-        dispatchText.value = "";
+        // Limpar campos baseado no modo
+        if (isNewDocument) {
+          newDocumentContext.value = "";
+        } else {
+          dispatchText.value = "";
+        }
+        documentName.value = "";
         promptExtra.value = "";
         resultSection.hidden = true;
         setStatus("✅ Resposta inserida no despacho com sucesso!");
@@ -1157,26 +1341,6 @@ if (writeManuallyButton) {
   });
 }
 
-// Abrir janela de gerenciamento de sigilo
-const sigiloButton = document.getElementById("sigiloButton");
-if (sigiloButton) {
-  sigiloButton.addEventListener("click", () => {
-    // Abrir em popup
-    const url = chrome.runtime.getURL("sigilo.html");
-    const width = 520;
-    const height = 700;
-
-    // Centralizar o popup na tela
-    const left = (screen.width - width) / 2;
-    const top = (screen.height - height) / 2;
-
-    window.open(
-      url,
-      'SEI_Smart_Sigilo',
-      `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
-    );
-  });
-}
 
 if (openOptionsButton) {
   openOptionsButton.addEventListener("click", () => {
@@ -1213,11 +1377,24 @@ if (reloadTargetTabsButton) {
   });
 }
 
-[dispatchText, promptExtra].forEach((element) => {
-  element.addEventListener("keydown", (event) => {
-    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-      event.preventDefault();
-      handleGenerate();
-    }
-  });
+// Event listeners para controlar a interface dinâmica
+document.querySelectorAll('input[name="documentType"]').forEach(radio => {
+  radio.addEventListener('change', updateInterfaceMode);
 });
+
+documentTypeSelect.addEventListener('change', updateInterfaceMode);
+
+// Event listeners para atalhos de teclado
+[dispatchText, documentName, promptExtra, newDocumentContext].forEach((element) => {
+  if (element) {
+    element.addEventListener("keydown", (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        event.preventDefault();
+        handleGenerate();
+      }
+    });
+  }
+});
+
+// Inicializar interface
+updateInterfaceMode();

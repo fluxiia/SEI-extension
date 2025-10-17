@@ -9,6 +9,11 @@ const signatarioNomeInput = document.getElementById("signatarioNome");
 const signatarioCargoInput = document.getElementById("signatarioCargo");
 const orgaoNomeInput = document.getElementById("orgaoNome");
 const orgaoSetoresInput = document.getElementById("orgaoSetores");
+const documentTemplateInput = document.getElementById("documentTemplate");
+const despachoTemplateInput = document.getElementById("despachoTemplate");
+const oficioTemplateInput = document.getElementById("oficioTemplate");
+const memorandoTemplateInput = document.getElementById("memorandoTemplate");
+const notaTecnicaTemplateInput = document.getElementById("notaTecnicaTemplate");
 
 function setStatus(message, isError = false) {
   saveStatus.textContent = message;
@@ -34,7 +39,12 @@ function loadSettings() {
       signatarioNome: "",
       signatarioCargo: "",
       orgaoNome: "",
-      orgaoSetores: ""
+      orgaoSetores: "",
+      documentTemplate: "",
+      despachoTemplate: "",
+      oficioTemplate: "",
+      memorandoTemplate: "",
+      notaTecnicaTemplate: ""
     },
     (settings) => {
       apiKeyInput.value = settings.apiKey;
@@ -45,6 +55,11 @@ function loadSettings() {
       signatarioCargoInput.value = settings.signatarioCargo;
       orgaoNomeInput.value = settings.orgaoNome;
       orgaoSetoresInput.value = settings.orgaoSetores;
+      documentTemplateInput.value = settings.documentTemplate;
+      despachoTemplateInput.value = settings.despachoTemplate;
+      oficioTemplateInput.value = settings.oficioTemplate;
+      memorandoTemplateInput.value = settings.memorandoTemplate;
+      notaTecnicaTemplateInput.value = settings.notaTecnicaTemplate;
       updateTempValue();
     }
   );
@@ -70,6 +85,11 @@ form.addEventListener("submit", (event) => {
   const signatarioCargo = signatarioCargoInput.value.trim();
   const orgaoNome = orgaoNomeInput.value.trim();
   const orgaoSetores = orgaoSetoresInput.value.trim();
+  const documentTemplate = documentTemplateInput.value.trim();
+  const despachoTemplate = despachoTemplateInput.value.trim();
+  const oficioTemplate = oficioTemplateInput.value.trim();
+  const memorandoTemplate = memorandoTemplateInput.value.trim();
+  const notaTecnicaTemplate = notaTecnicaTemplateInput.value.trim();
 
   chrome.storage.sync.set({ 
     apiKey, 
@@ -79,7 +99,12 @@ form.addEventListener("submit", (event) => {
     signatarioNome,
     signatarioCargo,
     orgaoNome,
-    orgaoSetores
+    orgaoSetores,
+    documentTemplate,
+    despachoTemplate,
+    oficioTemplate,
+    memorandoTemplate,
+    notaTecnicaTemplate
   }, () => {
     setStatus("✅ Configurações salvas com sucesso!");
   });
