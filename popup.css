@@ -20,8 +20,8 @@
 body {
   margin: 0;
   padding: 0;
-  min-width: 750px;
-  min-height: 700px;
+  min-width: 700px;
+  min-height: 600px;
   background: var(--color-bg);
   color: var(--color-text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -31,10 +31,10 @@ body {
 main {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 32px 36px;
-  width: 750px;
-  min-height: 700px;
+  gap: 16px;
+  padding: 24px 28px;
+  width: 700px;
+  min-height: 600px;
   box-sizing: border-box;
 }
 
@@ -277,17 +277,17 @@ label {
 
 textarea {
   resize: vertical;
-  min-height: 160px;
-  max-height: 400px;
-  padding: 16px;
+  min-height: 120px;
+  max-height: 300px;
+  padding: 12px;
   border-radius: 8px;
   border: 2px solid var(--color-border);
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-family: inherit;
   background: var(--color-card);
   color: var(--color-text);
   transition: border-color 0.2s, box-shadow 0.2s;
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 textarea::placeholder {
@@ -436,17 +436,17 @@ button {
 
 .response-textarea {
   resize: vertical;
-  min-height: 250px;
-  max-height: 450px;
-  padding: 16px;
+  min-height: 200px;
+  max-height: 350px;
+  padding: 12px;
   border-radius: 8px;
   border: 2px solid var(--color-border);
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-family: inherit;
   background: #f8f9fa;
   color: var(--color-text);
   transition: border-color 0.2s, box-shadow 0.2s;
-  line-height: 1.7;
+  line-height: 1.6;
   white-space: pre-wrap;
   width: 100%;
   box-sizing: border-box;

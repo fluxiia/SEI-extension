@@ -25,7 +25,6 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
   - Template para Despachos
   - Template para Ofícios
   - Template para Memorandos
-  - Template para Notas Técnicas
 - **Formato Padrão**: Estrutura padrão se não configurar templates
 
 #### Campo para Nome do Documento
@@ -125,7 +124,6 @@ Primeira versão estável da extensão SEI Smart desenvolvida para o Governo do 
 #### v1.2.0 (Planejado)
 - [ ] Suporte para Ofícios
 - [ ] Suporte para Memorandos
-- [ ] Suporte para Notas Técnicas
 - [ ] Biblioteca de textos padrão
 
 #### v2.0.0 (Futuro)

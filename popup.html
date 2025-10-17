@@ -51,41 +51,41 @@
         </div>
       </div>
 
+      <div class="form-group" id="responseModeFields">
+        <div class="form-group">
+          <label for="dispatchText">📄 Texto do Documento Recebido</label>
+          <textarea id="dispatchText" 
+          placeholder="Cole aqui o texto do despacho que você recebeu..." rows="4"></textarea>
+        </div>
+        
+        
+        <div id="captureSourceSection" class="capture-source-section" hidden>
+          <label for="captureSourceTab">📥 Capturar de qual janela?</label>
+
+          <select id="captureSourceTab" class="target-select">
+            <option value="">Carregando janelas...</option>
+          </select>
+          <div class="capture-actions">
+            <button id="captureTextButton" type="button" class="capture-button" 
+            title="Capturar lista de janelas do SEI">
+              📋 Capturar Lista de Janelas do SEI
+            </button>
+            <button id="confirmCaptureButton" type="button" class="btn-capture-confirm">
+              ✅ Capturar Texto do Documento
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="form-group" id="documentTypeSelectGroup">
         <label for="documentTypeSelect">📋 Tipo de Documento</label>
         <select id="documentTypeSelect" class="document-type-select">
           <option value="despacho">Despacho</option>
           <option value="oficio">Ofício</option>
           <option value="memorando">Memorando</option>
-          <option value="nota-tecnica">Nota Técnica</option>
         </select>
         <p class="field-hint">Escolha o tipo de documento que será gerado</p>
-      </div>
-
-      <div class="form-group" id="responseModeFields">
-        <div class="label-with-action">
-          <label for="dispatchText">📄 Despacho Recebido</label>
-          <button id="captureTextButton" type="button" class="capture-button" title="Capturar texto do documento aberto no SEI">
-            📋 Capturar do SEI
-          </button>
-        </div>
-        <textarea id="dispatchText" placeholder="Cole aqui o texto do despacho que você recebeu..." rows="6"></textarea>
-        
-        <div id="captureSourceSection" class="capture-source-section" hidden>
-          <label for="captureSourceTab">📥 Capturar de qual janela?</label>
-          <select id="captureSourceTab" class="target-select">
-            <option value="">Carregando janelas...</option>
-          </select>
-          <div class="capture-actions">
-            <button id="confirmCaptureButton" type="button" class="btn-capture-confirm">
-              ✅ Capturar
-            </button>
-            <button id="cancelCaptureButton" type="button" class="btn-capture-cancel">
-              ❌ Cancelar
-            </button>
-          </div>
-        </div>
-      </div>
+      </div>      
 
       <div class="form-group">
         <label for="documentName">📋 Nome do Documento (opcional)</label>
@@ -98,12 +98,14 @@
       </div>
 
       <div class="form-group" id="newDocumentFields" style="display: none;">
+        <div class="form-group">
         <label for="newDocumentContext">📝 Contexto do Novo Documento</label>
         <textarea
           id="newDocumentContext"
           placeholder="Descreva o contexto do novo documento:&#10;&#10;Exemplo:&#10;Situação: Processo administrativo sobre licitação&#10;Destinatário: Secretaria de Administração&#10;Objetivo: Solicitar esclarecimentos sobre documentação&#10;Contexto: O processo 12345/2024 foi protocolado com documentos incompletos. Necessário solicitar complementação da documentação fiscal e técnica.&#10;Prazo: 30 dias"
-          rows="8"
+          rows="5"
         ></textarea>
+        </div>
         <p class="field-hint">Descreva detalhadamente a situação, destinatário, objetivo e contexto do documento</p>
       </div>
 
@@ -112,7 +114,7 @@
         <textarea
           id="promptExtra"
           placeholder="Adicione informações extras que devem ser consideradas (prazos, referências, observações...)"
-          rows="4"
+          rows="3"
         ></textarea>
       </div>
 

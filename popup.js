@@ -40,7 +40,6 @@ async function loadSettings() {
         despachoTemplate: "",
         oficioTemplate: "",
         memorandoTemplate: "",
-        notaTecnicaTemplate: ""
       },
       resolve
     );
@@ -77,8 +76,7 @@ function updateInterfaceMode() {
     const placeholders = {
       'despacho': 'Descreva o contexto do despacho: situação administrativa, destinatário, objetivo, processo relacionado...',
       'oficio': 'Descreva o contexto do ofício: situação, destinatário externo, objetivo, processo relacionado...',
-      'memorando': 'Descreva o contexto do memorando: comunicação interna, destinatário, objetivo, situação...',
-      'nota-tecnica': 'Descreva o contexto da nota técnica: análise técnica, processo, objetivo, fundamentação...'
+      'memorando': 'Descreva o contexto do memorando: comunicação interna, destinatário, objetivo, situação...'
     };
     newDocumentContext.placeholder = placeholders[docType] || placeholders['despacho'];
     
@@ -976,7 +974,7 @@ function limparDespachoRecebido(texto) {
   return textoLimpo;
 }
 
-async function callOpenAi({ apiKey, model, temperature, signatarioNome, signatarioCargo, orgaoNome, orgaoSetores, documentTemplate, despachoTemplate, oficioTemplate, memorandoTemplate, notaTecnicaTemplate }, despacho, extra, nomeDocumento, isNewDocument = false, docType = 'despacho', contexto = '') {
+async function callOpenAi({ apiKey, model, temperature, signatarioNome, signatarioCargo, orgaoNome, orgaoSetores, documentTemplate, despachoTemplate, oficioTemplate, memorandoTemplate }, despacho, extra, nomeDocumento, isNewDocument = false, docType = 'despacho', contexto = '') {
 
   // Construir o contexto organizacional
   let contextoOrganizacional = "Você é um assessor administrativo do Governo do Estado do Maranhão";
@@ -1012,7 +1010,6 @@ async function callOpenAi({ apiKey, model, temperature, signatarioNome, signatar
       'despacho': despachoTemplate,
       'oficio': oficioTemplate,
       'memorando': memorandoTemplate,
-      'nota-tecnica': notaTecnicaTemplate
     };
     templateToUse = templates[docType] || '';
   } else {
