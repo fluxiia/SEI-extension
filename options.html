@@ -16,208 +16,316 @@
         </p>
       </div>
 
-      <form id="settingsForm">
-        <div class="form-section">
-          <h2 class="section-title">🔐 Autenticação</h2>
-          
-          <div class="form-group">
-            <label for="apiKey">Chave da API OpenAI</label>
-            <input
-              type="password"
-              id="apiKey"
-              name="apiKey"
-              placeholder="sk-proj-xxxxxxxxxxxxxxxxxxxxxxxxxx"
-              autocomplete="off"
-              required
-            />
-            <p class="field-hint">Obtenha sua chave em <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a></p>
-          </div>
+      <!-- Sistema de Abas -->
+      <div class="tabs-container">
+        <div class="tabs-header">
+          <button class="tab-button" data-tab="documents">📄 Estrutura do Órgão</button>
+          <button class="tab-button" data-tab="document-models">📝 Modelos</button>
+          <button class="tab-button active" data-tab="ai-model">🤖 Modelo de IA</button>
         </div>
 
-        <div class="form-section">
-          <h2 class="section-title">🤖 Parâmetros do Modelo</h2>
-          
-          <div class="form-group">
-            <label for="model">Modelo de IA</label>
-            <select id="model" name="model" required>
-              <option value="gpt-4o">GPT-4o (Recomendado - Mais rápido e eficiente)</option>
-              <option value="gpt-4o-mini">GPT-4o Mini (Econômico e rápido)</option>
-              <option value="gpt-4-turbo">GPT-4 Turbo (Alto desempenho)</option>
-              <option value="gpt-4">GPT-4 (Máxima qualidade)</option>
-              <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Rápido e econômico)</option>
-              <option value="gpt-3.5-turbo-16k">GPT-3.5 Turbo 16k (Textos longos)</option>
-            </select>
-            <p class="field-hint">Modelos mais avançados geram respostas melhores, mas custam mais</p>
-          </div>
-
-          <div class="form-group">
-            <label for="temperature">
-              Temperatura (Criatividade)
-              <span class="temp-value" id="tempValue">0.2</span>
-            </label>
-            <input
-              type="range"
-              id="temperature"
-              name="temperature"
-              min="0"
-              max="1"
-              step="0.1"
-              value="0.2"
-              required
-            />
-            <div class="range-labels">
-              <span>Mais preciso</span>
-              <span>Mais criativo</span>
+        <form id="settingsForm">
+          <!-- Aba: Configurações do Modelo de IA -->
+          <div class="tab-content active" id="ai-model-tab">
+            <div class="form-section">
+              <h2 class="section-title">🔐 Autenticação</h2>
+              
+              <div class="form-group">
+                <label for="apiKey">Chave da API OpenAI</label>
+                <input
+                  type="password"
+                  id="apiKey"
+                  name="apiKey"
+                  placeholder="sk-proj-xxxxxxxxxxxxxxxxxxxxxxxxxx"
+                  autocomplete="off"
+                  required
+                />
+                <p class="field-hint">Obtenha sua chave em <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a></p>
+              </div>
             </div>
-            <p class="field-hint">Valores baixos geram respostas mais consistentes e objetivas</p>
-          </div>
-        </div>
 
-        <div class="form-section">
-          <h2 class="section-title">👤 Dados do Signatário</h2>
-          
-          <div class="form-group">
-            <label for="signatarioNome">Nome Completo do Signatário</label>
-            <input
-              type="text"
-              id="signatarioNome"
-              name="signatarioNome"
-              placeholder="Ex: João Silva Santos"
-              autocomplete="off"
-            />
-            <p class="field-hint">Nome que aparecerá no final dos documentos</p>
-          </div>
+            <div class="form-section">
+              <h2 class="section-title">🤖 Parâmetros do Modelo</h2>
+              
+              <div class="form-group">
+                <label for="model">Modelo de IA</label>
+                <select id="model" name="model" required>
+                  <option value="gpt-4o">GPT-4o (Recomendado - Mais rápido e eficiente)</option>
+                  <option value="gpt-4o-mini">GPT-4o Mini (Econômico e rápido)</option>
+                  <option value="gpt-4-turbo">GPT-4 Turbo (Alto desempenho)</option>
+                  <option value="gpt-4">GPT-4 (Máxima qualidade)</option>
+                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Rápido e econômico)</option>
+                  <option value="gpt-3.5-turbo-16k">GPT-3.5 Turbo 16k (Textos longos)</option>
+                </select>
+                <p class="field-hint">Modelos mais avançados geram respostas melhores, mas custam mais</p>
+              </div>
 
-          <div class="form-group">
-            <label for="signatarioCargo">Cargo do Signatário</label>
-            <input
-              type="text"
-              id="signatarioCargo"
-              name="signatarioCargo"
-              placeholder="Ex: Assessor Administrativo"
-              autocomplete="off"
-            />
-            <p class="field-hint">Cargo que aparecerá abaixo do nome</p>
-          </div>
-        </div>
+              <div class="form-group">
+                <label for="temperature">
+                  Temperatura (Criatividade)
+                  <span class="temp-value" id="tempValue">0.2</span>
+                </label>
+                <input
+                  type="range"
+                  id="temperature"
+                  name="temperature"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value="0.2"
+                  required
+                />
+                <div class="range-labels">
+                  <span>Mais preciso</span>
+                  <span>Mais criativo</span>
+                </div>
+                <p class="field-hint">Valores baixos geram respostas mais consistentes e objetivas</p>
+              </div>
+            </div>
 
-        <div class="form-section">
-          <h2 class="section-title">🏛️ Estrutura do Órgão</h2>
-          
-          <div class="form-group">
-            <label for="orgaoNome">Nome do Órgão</label>
-            <input
-              type="text"
-              id="orgaoNome"
-              name="orgaoNome"
-              placeholder="Ex: Secretaria de Estado de Transparência e Controle"
-              autocomplete="off"
-            />
-            <p class="field-hint">Órgão do Governo do Estado do Maranhão onde você trabalha</p>
-          </div>
-
-          <div class="form-group">
-            <label for="orgaoSetores">Setores e Gestores</label>
-            <textarea
-              id="orgaoSetores"
-              name="orgaoSetores"
-              rows="5"
-              placeholder="Liste os setores e seus gestores, um por linha.&#10;Formato: Nome do Setor - Nome do Gestor&#10;&#10;Exemplos:&#10;Secretaria Adjunta de Transparência - SEATRAN/STC - Maria Silva Costa&#10;Gabinete do Secretário - João Santos Oliveira&#10;Coordenadoria de Controle Interno - Pedro Costa"
-              autocomplete="off"
-            ></textarea>
-            <p class="field-hint">
-              <strong>Formato:</strong> Nome do Setor - Nome do Gestor (um por linha)<br>
-              Exemplo: Secretaria Adjunta de Transparência - SEATRAN/STC - Maria Silva Costa
-            </p>
-          </div>
-        </div>
-
-        <div class="form-section">
-          <h2 class="section-title">📄 Formato do Documento</h2>
-          
-          <div class="form-group">
-            <label for="documentTemplate">Formato Básico do Documento (Resposta)</label>
-            <textarea
-              id="documentTemplate"
-              name="documentTemplate"
-              rows="8"
-              placeholder="Deixe em branco para usar o formato padrão..."
-            ></textarea>
-            <p class="field-hint">Formato usado para respostas a documentos existentes</p>
+            <div class="form-section">
+              <h2 class="section-title">🎨 Interface</h2>
+              
+              <label class="checkbox-row" for="floatingButtonEnabled">
+                <input
+                  type="checkbox"
+                  id="floatingButtonEnabled"
+                  name="floatingButtonEnabled"
+                  checked
+                />
+                <span>Mostrar botão flutuante nas janelas do SEI</span>
+              </label>
+              <p class="field-hint">O botão permite acessar a extensão sem depender da barra do navegador</p>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label for="despachoTemplate">Template para Despachos</label>
-            <textarea
-              id="despachoTemplate"
-              name="despachoTemplate"
-              rows="6"
-              placeholder="Template específico para despachos novos..."
-            ></textarea>
-            <p class="field-hint">Template usado quando gerar novos despachos</p>
+          <!-- Aba: Informações sobre Documentos -->
+          <div class="tab-content" id="documents-tab">
+            <div class="form-section">
+              <h2 class="section-title">👤 Dados do Signatário</h2>
+              
+              <div class="form-group">
+                <label for="signatarioNome">Nome Completo do Signatário</label>
+                <input
+                  type="text"
+                  id="signatarioNome"
+                  name="signatarioNome"
+                  placeholder="Ex: João Silva Santos"
+                  autocomplete="off"
+                />
+                <p class="field-hint">Nome que aparecerá no final dos documentos</p>
+              </div>
+
+              <div class="form-group">
+                <label for="signatarioCargo">Cargo do Signatário</label>
+                <input
+                  type="text"
+                  id="signatarioCargo"
+                  name="signatarioCargo"
+                  placeholder="Ex: Assessor Administrativo"
+                  autocomplete="off"
+                />
+                <p class="field-hint">Cargo que aparecerá abaixo do nome, ex: Secretário Adjunto de Transparência</p>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h2 class="section-title">🏛️ Estrutura do Órgão</h2>
+              
+              <div class="form-group">
+                <label for="orgaoNome">Nome do Órgão</label>
+                <input
+                  type="text"
+                  id="orgaoNome"
+                  name="orgaoNome"
+                  placeholder="Ex: Secretaria de Estado de Transparência e Controle"
+                  autocomplete="off"
+                />
+                <p class="field-hint">Órgão do Governo do Estado do Maranhão onde você trabalha. Ex: Secretaria de Estado de Transparência e Controle</p>
+              </div>
+
+              <div class="form-group">
+                <label for="orgaoSetores">Setores e Gestores</label>
+                <textarea
+                  id="orgaoSetores"
+                  name="orgaoSetores"
+                  rows="5"
+                  placeholder="Liste os setores e seus gestores, um por linha.&#10;Formato: Nome do Setor - Nome do Gestor&#10;&#10;Exemplos:&#10;Secretaria Adjunta de Transparência - SEATRAN/STC - Maria Silva Costa&#10;Gabinete do Secretário - João Santos Oliveira&#10;Coordenadoria de Controle Interno - Pedro Costa"
+                  autocomplete="off"
+                ></textarea>
+                <p class="field-hint">
+                  <strong>Formato:</strong> Nome do Setor - Nome do Gestor (um por linha)<br>
+                  Exemplo: 
+                  <br>Secretaria de Transparencia e Controle - Raul Cancian Mochel
+                  <br>Chefe de Gabinete - Bruna Teles Maciel Storto
+                  <br>Secretaria de Administração e finanças - Danielle Mesquita de França Sousa
+                  <br>Auditoria Geral do Estado - Luana de Jesus Pereira
+                  <br>Corregedoria Geral do Estado - Daniel Barros
+                  <br>Ouvidoria Geral do Estado - Marco Aurélio Tavares Santiago Filho
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label for="oficioTemplate">Template para Ofícios</label>
-            <textarea
-              id="oficioTemplate"
-              name="oficioTemplate"
-              rows="6"
-              placeholder="Template específico para ofícios novos..."
-            ></textarea>
-            <p class="field-hint">Template usado quando gerar novos ofícios</p>
+
+          <!-- Aba: Modelos de Documentos -->
+          <div class="tab-content" id="document-models-tab">
+            <div class="form-section">
+              <h2 class="section-title">📝 Modelos de Documentos</h2>
+              <p class="field-hint">Gerencie os modelos padrão e crie modelos personalizados</p>
+              
+              <div class="default-models">
+                <h3>📋 Modelos Padrão</h3>
+                <p class="field-hint">Estes são os modelos básicos incluídos na extensão:</p>
+                
+                <div class="model-item default-model">
+                  <div class="model-header">
+                    <h4>📄 Despacho Padrão</h4>
+                    <div class="model-actions">
+                      <button class="btn-edit-default" data-model="despacho-padrao">✏️ Editar</button>
+                      <span class="model-status">Padrão</span>
+                    </div>
+                  </div>
+                  <div class="model-preview">
+                    <pre>Processo nº: {PROCESSO}
+Assunto: {ASSUNTO}
+
+DESPACHO Nº {NUMERO}
+
+Ao {DESTINATARIO},
+
+{CONTEUDO}
+
+São Luís/MA, {DATA}.
+
+Atenciosamente,
+
+{SIGNATARIO}
+{CARGO}</pre>
+                  </div>
+                </div>
+
+                <div class="model-item default-model">
+                  <div class="model-header">
+                    <h4>📋 Ofício Padrão</h4>
+                    <div class="model-actions">
+                      <button class="btn-edit-default" data-model="oficio-padrao">✏️ Editar</button>
+                      <span class="model-status">Padrão</span>
+                    </div>
+                  </div>
+                  <div class="model-preview">
+                    <pre>Processo nº: {PROCESSO}
+Assunto: {ASSUNTO}
+
+OFÍCIO Nº {NUMERO}
+
+Ao {DESTINATARIO},
+
+{CONTEUDO}
+
+São Luís/MA, {DATA}.
+
+Atenciosamente,
+
+{SIGNATARIO}
+{CARGO}</pre>
+                  </div>
+                </div>
+
+                <div class="model-item default-model">
+                  <div class="model-header">
+                    <h4>📝 Memorando Padrão</h4>
+                    <div class="model-actions">
+                      <button class="btn-edit-default" data-model="memorando-padrao">✏️ Editar</button>
+                      <span class="model-status">Padrão</span>
+                    </div>
+                  </div>
+                  <div class="model-preview">
+                    <pre>Processo nº: {PROCESSO}
+Assunto: {ASSUNTO}
+
+MEMORANDO Nº {NUMERO}
+
+Ao {DESTINATARIO},
+
+{CONTEUDO}
+
+São Luís/MA, {DATA}.
+
+Atenciosamente,
+
+{SIGNATARIO}
+{CARGO}</pre>
+                  </div>
+                </div>
+              </div>
+
+              <div class="custom-models">
+                <h3>✏️ Modelos Personalizados</h3>
+                <p class="field-hint">Crie e gerencie seus modelos personalizados de documentos</p>
+              
+              <div class="models-container">
+                <div class="models-list" id="modelsList">
+                  <!-- Lista de modelos será preenchida dinamicamente -->
+                </div>
+                
+                <div class="model-form" id="modelForm" style="display: none;">
+                  <h3>📝 Novo Modelo de Documento</h3>
+                  
+                  <div class="form-group">
+                    <label for="modelName">Nome do Modelo</label>
+                    <input
+                      type="text"
+                      id="modelName"
+                      name="modelName"
+                      placeholder="Ex: Despacho Padrão, Ofício Formal, etc."
+                      autocomplete="off"
+                    />
+                    <p class="field-hint">Nome identificador para o modelo</p>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="modelText">Texto do Modelo</label>
+                    <textarea
+                      id="modelText"
+                      name="modelText"
+                      rows="12"
+                      placeholder="Digite o texto do modelo aqui...&#10;&#10;Use variáveis como:&#10;{PROCESSO} - Número do processo&#10;{ASSUNTO} - Assunto do processo&#10;{DESTINATARIO} - Destinatário&#10;{CONTEUDO} - Conteúdo principal&#10;{DATA} - Data atual&#10;{SIGNATARIO} - Nome do signatário&#10;{CARGO} - Cargo do signatário"
+                      autocomplete="off"
+                    ></textarea>
+                    <p class="field-hint">
+                      <strong>Variáveis disponíveis:</strong><br>
+                      <code>{PROCESSO}</code> - Número do processo<br>
+                      <code>{ASSUNTO}</code> - Assunto do processo<br>
+                      <code>{DESTINATARIO}</code> - Destinatário<br>
+                      <code>{CONTEUDO}</code> - Conteúdo principal<br>
+                      <code>{DATA}</code> - Data atual<br>
+                      <code>{SIGNATARIO}</code> - Nome do signatário<br>
+                      <code>{CARGO}</code> - Cargo do signatário
+                    </p>
+                  </div>
+
+                  <div class="model-actions">
+                    <button type="button" class="btn-secondary" id="cancelModel">❌ Cancelar</button>
+                    <button type="button" class="btn-primary" id="saveModel">💾 Salvar Modelo</button>
+                  </div>
+                </div>
+
+                <div class="add-model-section">
+                  <button type="button" class="btn-add" id="addModelBtn">
+                    ➕ Adicionar Novo Modelo
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label for="memorandoTemplate">Template para Memorandos</label>
-            <textarea
-              id="memorandoTemplate"
-              name="memorandoTemplate"
-              rows="6"
-              placeholder="Template específico para memorandos novos..."
-            ></textarea>
-            <p class="field-hint">Template usado quando gerar novos memorandos</p>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">💾 Salvar configurações</button>
+            <p id="saveStatus" role="status" aria-live="polite"></p>
           </div>
-
-
-          <div class="template-help">
-            <h3>📋 Formato Padrão (usado se não configurar templates):</h3>
-            <ol>
-              <li>Processo nº: [número do processo] (em negrito e alinhado à esquerda)</li>
-              <li>Assunto: [assunto do processo] (em negrito)</li>
-              <li>[LINHA VAZIA]</li>
-              <li>[TÍTULO DO DOCUMENTO EM MAIÚSCULAS - ex: DESPACHO Nº XXX] (alinhado ao centro)</li>
-              <li>[LINHA VAZIA]</li>
-              <li>Ao/À [destinatário - ex: "Ao Gabinete", "À Secretaria Adjunta"]</li>
-              <li>[PARÁGRAFOS DO CORPO DO TEXTO - conteúdo principal do documento]</li>
-              <li>[DUAS LINHAS VAZIAS]</li>
-              <li>São Luís/MA, data da assinatura eletrônica. (alinhado à direita)</li>
-              <li>[LINHA VAZIA]</li>
-              <li>Atenciosamente</li>
-            </ol>
-          </div>
-        </div>
-
-        <div class="form-section">
-          <h2 class="section-title">🎨 Interface</h2>
-          
-          <label class="checkbox-row" for="floatingButtonEnabled">
-            <input
-              type="checkbox"
-              id="floatingButtonEnabled"
-              name="floatingButtonEnabled"
-              checked
-            />
-            <span>Mostrar botão flutuante nas janelas do SEI</span>
-          </label>
-          <p class="field-hint">O botão permite acessar a extensão sem depender da barra do navegador</p>
-        </div>
-
-        <div class="form-actions">
-          <button type="submit" class="btn-primary">💾 Salvar configurações</button>
-          <p id="saveStatus" role="status" aria-live="polite"></p>
-        </div>
-      </form>
+        </form>
+      </div>
     </main>
     <script type="module" src="options.js"></script>
   </body>
