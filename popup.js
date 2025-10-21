@@ -411,7 +411,7 @@ function updateInterfaceMode() {
     generateButton.textContent = '✨ Gerar Novo Documento';
 
     // Placeholder padrão para novo documento
-    newDocumentContext.placeholder = 'Descreva o contexto do novo documento: situação administrativa, destinatário, objetivo, processo relacionado..., não é necessário colocar todos os dados, apenas o que julgar necessário para gerar o documento';
+    newDocumentContext.placeholder = 'Descreva o contexto do novo documento: destinatário, objetivo, processo relacionado..., não é necessário colocar todos os dados, apenas o que julgar necessário para gerar o documento';
 
   } else {
     // Modo resposta
@@ -1350,6 +1350,20 @@ function limparDespachoRecebido(texto) {
   return textoLimpo;
 }
 
+// Função para substituir variáveis no template
+function substituteTemplateVariables(template, variables) {
+  let result = template;
+  
+  // Substituir cada variável pelo valor correspondente
+  Object.keys(variables).forEach(key => {
+    const placeholder = `{${key.toUpperCase()}}`;
+    const value = variables[key] || '';
+    result = result.replace(new RegExp(placeholder, 'g'), value);
+  });
+  
+  return result;
+}
+
 async function callOpenAi({ apiKey, model, temperature, signatarioNome, signatarioCargo, orgaoNome, orgaoSetores }, despacho, extra, nomeDocumento, isNewDocument = false, docType = 'despacho', contexto = '') {
 
   // Construir o contexto organizacional
@@ -1380,19 +1394,41 @@ async function callOpenAi({ apiKey, model, temperature, signatarioNome, signatar
   const selectedModel = getSelectedModel();
   const templateToUse = selectedModel.template;
 
+  let instrucoesEstrutura;
+ 
   if (templateToUse && templateToUse.trim()) {
+    // Substituir variáveis no template
+    const templateSubstituido = substituteTemplateVariables(templateToUse, {
+      signatario: signatarioNome || '[NOME DO SIGNATÁRIO]',
+      cargo: signatarioCargo || '[CARGO DO SIGNATÁRIO]'
+    });
+    
+    // Debug: mostrar informações do signatário
+    console.log('🔍 DEBUG SIGNATÁRIO:', {
+      signatarioNome,
+      signatarioCargo,
+      templateOriginal: templateToUse,
+      templateSubstituido
+    });
+
     // Usar formato personalizado se fornecido
     instrucoesEstrutura = `
 
 ESTRUTURA OBRIGATÓRIA DO DOCUMENTO (use EXATAMENTE este formato):
 
-${templateToUse}
+${templateSubstituido}
+
+INFORMAÇÕES IMPORTANTES SOBRE O SIGNATÁRIO:
+- NOME DO SIGNATÁRIO: ${signatarioNome || '[NÃO INFORMADO - CONFIGURE NAS OPÇÕES]'}
+- CARGO DO SIGNATÁRIO: ${signatarioCargo || '[NÃO INFORMADO - CONFIGURE NAS OPÇÕES]'}
 
 REGRAS DE FORMATAÇÃO:
 - Siga EXATAMENTE a estrutura definida acima
 - O texto deve ser formal, claro e objetivo
 - Identifique o destinatário correto do contexto fornecido
 - Use "Ao" para masculino e "À" para feminino
+- OBRIGATÓRIO: Use o nome e cargo do signatário informados acima no final do documento
+- Se o signatário não estiver configurado, deixe os campos em branco ou use [NOME DO SIGNATÁRIO] e [CARGO DO SIGNATÁRIO]
 `;
   } else {
     // Usar formato padrão
@@ -1417,13 +1453,15 @@ ESTRUTURA OBRIGATÓRIA DO DOCUMENTO (ordem exata):
 
 REGRAS DE FORMATAÇÃO:
 - Processo e Assunto devem estar em NEGRITO
-- O título do documento (ex: DESPACHO Nº 31) deve estar em MAIÚSCULAS
+- O título do documento deve estar em MAIÚSCULAS
 - Use "Ao" para masculino e "À" para feminino
 - O texto deve ser formal, claro e objetivo
 - Identifique o destinatário correto do contexto fornecido
 `;
   }
 
+  // Revisado: garantir que signatarioNome e signatarioCargo estejam carregados das configurações
+  // No caso de novo documento NÃO incluir o despacho recebido
   const messages = [
     {
       role: "system",
@@ -1431,66 +1469,46 @@ REGRAS DE FORMATAÇÃO:
     },
     {
       role: "user",
-      content: isNewDocument ?
-        // Prompt para novo documento
-        `Elabore um novo ${docType.toUpperCase()} administrativo profissional seguindo EXATAMENTE a estrutura definida:
+      content: isNewDocument
+        ? `Elabore um novo ${docType.toUpperCase()} administrativo profissional de acordo com o contexto fornecido e seguindo exatamente as orientações e estrutura a seguir:
+
+${instrucoesEstrutura}
 
 TIPO DE DOCUMENTO: ${docType.toUpperCase()}
-${nomeDocumento ? `NOME DO DOCUMENTO: ${nomeDocumento}` : ''}
+${nomeDocumento ? `NOME DO DOCUMENTO A SER GERADO: ${nomeDocumento}` : ''}
+
+SIGNATÁRIO: ${signatarioNome || "[NOME DO SIGNATÁRIO - CONFIGURE NAS OPÇÕES DA EXTENSÃO]"}
+CARGO: ${signatarioCargo || "[CARGO DO SIGNATÁRIO - CONFIGURE NAS OPÇÕES DA EXTENSÃO]"}
+
+INSTRUÇÕES CRÍTICAS SOBRE O SIGNATÁRIO:
+- OBRIGATÓRIO: Inclua EXATAMENTE o nome "${signatarioNome || '[NOME DO SIGNATÁRIO]'}" no final do documento
+- OBRIGATÓRIO: Inclua EXATAMENTE o cargo "${signatarioCargo || '[CARGO DO SIGNATÁRIO]'}" abaixo do nome
+- Se o signatário não estiver configurado, deixe claro que precisa ser configurado nas opções
 
 CONTEXTO E REQUISITOS:
 ${contexto}
 
 ${extra ? `INFORMAÇÕES ADICIONAIS:
 ${extra}` : ''}
+`
+        : `Elabore um despacho administrativo profissional em resposta ao documento recebido, seguindo exatamente as orientações e estrutura abaixo:
 
-INSTRUÇÕES IMPORTANTES:
-${nomeDocumento ? `- Use "${nomeDocumento}" como título do documento` : `- Use um título apropriado em MAIÚSCULAS (ex: "${docType.toUpperCase()} Nº 31 - SEATRAN/STC")`}
-- Comece com "Processo nº: [número]" (use um número apropriado baseado no contexto)
-- Segunda linha: "Assunto: [assunto]" (extraia do contexto fornecido)
-- Deixe UMA linha vazia
-- Título do documento em MAIÚSCULAS
-- Deixe UMA linha vazia
-- Comece o texto com "Ao" ou "À" seguido do destinatário apropriado (identifique do contexto)
-- Escreva os parágrafos do corpo do texto baseado no contexto fornecido
-- Deixe DUAS linhas vazias antes do fecho
-- Escreva "São Luís/MA, data da assinatura eletrônica." (alinhado à direita)
-- Deixe UMA linha vazia
-- Escreva "Atenciosamente," (alinhado à esquerda)
-- Deixe UMA linha vazia${signatarioNome ? `
-- Escreva "${signatarioNome.toUpperCase()}" (em maiúsculas)` : ''}${signatarioCargo ? `
-- Escreva "${signatarioCargo}"` : ''}
+${instrucoesEstrutura}
 
-IMPORTANTE: Separe cada item com linhas vazias conforme indicado. Use quebras de linha duplas (<br><br>) para separar parágrafos.` :
-        // Prompt para resposta (modo atual)
-        `Elabore um despacho administrativo profissional em resposta ao documento recebido seguindo EXATAMENTE a estrutura definida:
+SIGNATÁRIO: ${signatarioNome || "[NOME DO SIGNATÁRIO - CONFIGURE NAS OPÇÕES DA EXTENSÃO]"}
+CARGO: ${signatarioCargo || "[CARGO DO SIGNATÁRIO - CONFIGURE NAS OPÇÕES DA EXTENSÃO]"}
 
-DESPACHO/DOCUMENTO RECEBIDO:
-${despacho}
+INSTRUÇÕES CRÍTICAS SOBRE O SIGNATÁRIO:
+- OBRIGATÓRIO: Inclua EXATAMENTE o nome "${signatarioNome || '[NOME DO SIGNATÁRIO]'}" no final do documento
+- OBRIGATÓRIO: Inclua EXATAMENTE o cargo "${signatarioCargo || '[CARGO DO SIGNATÁRIO]'}" abaixo do nome
+- Se o signatário não estiver configurado, deixe claro que precisa ser configurado nas opções
 
-${nomeDocumento ? `NOME DO DOCUMENTO A SER GERADO: ${nomeDocumento}` : ''}
+${despacho && despacho.trim()
+  ? `DESPACHO/DOCUMENTO RECEBIDO: ${despacho}` : ''}
 
 ${extra ? `INFORMAÇÕES ADICIONAIS/CONTEXTO:
 ${extra}` : ''}
-
-INSTRUÇÕES IMPORTANTES:
-${nomeDocumento ? `- Use "${nomeDocumento}" como título do documento` : '- Use um título apropriado em MAIÚSCULAS (ex: "DESPACHO Nº 31 - SEATRAN/STC")'}
-- Comece com "Processo nº: [número]" (extraia do contexto ou use um exemplo)
-- Segunda linha: "Assunto: [assunto]" (extraia do contexto)
-- Deixe UMA linha vazia
-- Título do documento em MAIÚSCULAS
-- Deixe UMA linha vazia
-- Comece o texto com "Ao" ou "À" seguido do destinatário, o destinatário é o setor do despacho recebido
-- Escreva os parágrafos do corpo do texto
-- Deixe DUAS linhas vazias antes do fecho
-- Escreva "São Luís/MA, data da assinatura eletrônica." (alinhado à direita)
-- Deixe UMA linha vazia
-- Escreva "Atenciosamente," (alinhado à esquerda)
-- Deixe UMA linha vazia${signatarioNome ? `
-- Escreva "${signatarioNome.toUpperCase()}" (em maiúsculas)` : ''}${signatarioCargo ? `
-- Escreva "${signatarioCargo}"` : ''}
-
-IMPORTANTE: Separe cada item com linhas vazias conforme indicado. Use quebras de linha duplas (<br><br>) para separar parágrafos.`
+`
     }
   ];
 
@@ -1612,14 +1630,14 @@ async function handleGenerate() {
         await applyResponseToPage(finalText);
 
         // Limpar campos baseado no modo
-        if (isNewDocument) {
-          newDocumentContext.value = "";
-        } else {
-          dispatchText.value = "";
-        }
-        documentName.value = "";
-        promptExtra.value = "";
-        resultSection.hidden = true;
+        // if (isNewDocument) {
+        //   newDocumentContext.value = "";
+        // } else {
+        //   dispatchText.value = "";
+        // }
+        // documentName.value = "";
+        // promptExtra.value = "";
+        // resultSection.hidden = true;
         setStatus("✅ Resposta inserida no Documento com sucesso!");
 
         useResponseButton.textContent = "✅ Aplicado com sucesso!";
@@ -1827,8 +1845,7 @@ document.addEventListener('keydown', (event) => {
 function fillContextExample() {
   const contextTextarea = document.getElementById('newDocumentContext');
   if (contextTextarea) {
-    contextTextarea.value = `Situação: Processo administrativo sobre licitação
-Destinatário: Secretaria de Administração
+    contextTextarea.value = `Destinatário: Secretaria de Administração
 Objetivo: Solicitar esclarecimentos sobre documentação
 Contexto: O processo 12345/2024 foi protocolado com documentos incompletos. Necessário solicitar complementação da documentação fiscal e técnica
 Prazo: 30 dias`;

@@ -81,6 +81,7 @@
           </div>
           <div class="form-group">
             <label for="dispatchText">📄 Texto do Documento Recebido</label>
+            <p class="field-hint">Sempre selecione o documento recebido na janela de origem antes de capturar o texto.</p>
             <textarea id="dispatchText" 
             placeholder="Cole aqui o texto do despacho que você recebeu..." rows="4"></textarea>
           </div>
@@ -146,14 +147,14 @@ Prazo: 30 dias"
           ></textarea>
         </div>
         </div>
-        <p class="field-hint">Descreva detalhadamente a situação, destinatário, objetivo e contexto do documento</p>
+        <p class="field-hint">Descreva detalhadamente o destinatário, objetivo e contexto do documento</p>
       </div>
 
       <div class="form-group" id="additionalContextFields">
         <label for="promptExtra">💡 Contexto Adicional (opcional)</label>
         <textarea
           id="promptExtra"
-          placeholder="Adicione informações extras que devem ser consideradas (prazos, referências, observações...)"
+          placeholder="Adicione informações extras como forma de escrita, objetividade, detalhado ou curto, inclur legislação ou não, etc."
           rows="3"
         ></textarea>
       </div>

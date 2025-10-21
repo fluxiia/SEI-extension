@@ -320,13 +320,77 @@ Atenciosamente,
             </div>
           </div>
 
-          <div class="form-actions">
-            <button type="submit" class="btn-primary">💾 Salvar configurações</button>
-            <p id="saveStatus" role="status" aria-live="polite"></p>
-          </div>
         </form>
       </div>
+
+      <!-- Botão salvar fora do container das abas -->
+      <div class="form-actions">
+        <button type="submit" form="settingsForm" class="btn-primary">💾 Salvar configurações</button>
+        <p id="saveStatus" role="status" aria-live="polite"></p>
+      </div>
+
     </main>
+    <style>
+      /* Garantir que o botão salvar seja sempre visível */
+      .form-actions {
+        margin-top: 2rem !important;
+        padding: 1.5rem !important;
+        text-align: center !important;
+        background: #ffffff !important;
+        border-radius: 12px !important;
+        border: 2px solid #007bff !important;
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15) !important;
+        position: relative !important;
+        z-index: 1000 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+        align-items: center !important;
+        width: 100% !important;
+        max-width: 680px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+      }
+      
+      .btn-primary {
+        background: #007bff !important;
+        color: white !important;
+        border: none !important;
+        padding: 16px 32px !important;
+        border-radius: 8px !important;
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+        min-width: 250px !important;
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3) !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        position: relative !important;
+        z-index: 1001 !important;
+      }
+      
+      
+      .btn-primary:hover {
+        background: #0056b3 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4) !important;
+      }
+      
+      .btn-primary:active {
+        transform: translateY(0) !important;
+        box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3) !important;
+      }
+      
+      #saveStatus {
+        margin-top: 1rem;
+        font-weight: 500;
+        min-height: 1.5em;
+      }
+    </style>
     <script type="module" src="options.js"></script>
   </body>
 </html>
