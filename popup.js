@@ -215,12 +215,13 @@ async function autoCaptureIfNeeded() {
         t.url.includes('visualizar')
       );
 
-      console.log('Tabs do SEI encontradas:', seiTabs.length);
-      console.log('Tabs com documentos:', docTabs.length);
+      // Debug logs removidos para produção
+      // // console.log removido para produ��o
+      // // console.log removido para produ��o
 
       const targetTab = docTabs.length > 0 ? docTabs[0] : seiTabs[0];
-      console.log('Tab selecionada para captura:', targetTab.url);
-      console.log('Tab ID:', targetTab.id);
+      // // console.log removido para produ��o
+      // // console.log removido para produ��o
 
       // Executar captura automática
       const results = await chrome.scripting.executeScript({
@@ -229,7 +230,7 @@ async function autoCaptureIfNeeded() {
           allFrames: true
         },
         func: function () {
-          console.log('Executando captura no frame:', window.location.href);
+          // // console.log removido para produ��o
 
           // Lista expandida de seletores para captura
           const possiveisElementos = [
@@ -291,9 +292,10 @@ async function autoCaptureIfNeeded() {
             }
           }
 
-          console.log('Texto encontrado:', melhorTexto.length, 'caracteres');
-          console.log('Elemento:', melhorElemento);
-          console.log('Score:', melhorScore);
+          // Debug logs removidos para produção
+          // // console.log removido para produ��o
+          // // console.log removido para produ��o
+          // // console.log removido para produ��o
 
           // Reduzir o limite mínimo para capturar mais conteúdo
           if (melhorTexto && melhorTexto.length > 20) {
@@ -314,17 +316,12 @@ async function autoCaptureIfNeeded() {
       let melhorResultado = null;
       let melhorScore = 0;
 
-      console.log('Resultados da captura:', results.length);
+      // // console.log removido para produ��o
 
       for (let i = 0; i < results.length; i++) {
         const res = results[i]?.result;
         if (res && res.success && res.text) {
-          console.log(`Resultado ${i}:`, {
-            textLength: res.text.length,
-            score: res.score || res.text.length,
-            from: res.from,
-            url: res.url
-          });
+          // console.log removido para produ��o
 
           const score = res.score || res.text.length;
           if (score > melhorScore) {
@@ -337,11 +334,11 @@ async function autoCaptureIfNeeded() {
       if (melhorResultado) {
         dispatchText.value = melhorResultado.text;
         setStatus("✅ Texto capturado automaticamente!");
-        console.log('Captura bem-sucedida:', melhorResultado.from);
+        // console.log removido para produ��o
         return true;
       } else {
         // Tentar captura mais simples como fallback
-        console.log('Tentando captura de fallback...');
+        // console.log removido para produ��o
         try {
           const fallbackResults = await chrome.scripting.executeScript({
             target: {
@@ -371,7 +368,7 @@ async function autoCaptureIfNeeded() {
           if (fallbackResults && fallbackResults[0] && fallbackResults[0].result && fallbackResults[0].result.success) {
             dispatchText.value = fallbackResults[0].result.text;
             setStatus("✅ Texto capturado com método alternativo!");
-            console.log('Captura de fallback bem-sucedida');
+            // console.log removido para produ��o
             return true;
           }
         } catch (fallbackError) {
@@ -745,8 +742,8 @@ function cancelCapture() {
 
 async function loadAvailableTabs() {
   try {
-    console.log('Carregando janelas disponíveis...');
-    console.log('targetTabSelect encontrado:', !!targetTabSelect);
+    // console.log removido para produ��o
+    // console.log removido para produ��o
 
     if (!targetTabSelect) {
       throw new Error('Elemento targetTabSelect não encontrado!');
@@ -754,17 +751,17 @@ async function loadAvailableTabs() {
 
     // Buscar todas as janelas do SEI abertas
     const allTabs = await chrome.tabs.query({});
-    console.log('Total de tabs encontradas:', allTabs.length);
+    // console.log removido para produ��o
 
     const seiTabs = allTabs.filter(t => t.url && /\/sei\//i.test(t.url));
-    console.log('Tabs do SEI encontradas:', seiTabs.length);
+    // console.log removido para produ��o
 
     // Separar janelas de editor das outras
     const editorTabs = seiTabs.filter(t => t.url.includes('acao=editor_montar'));
     const otherTabs = seiTabs.filter(t => !t.url.includes('acao=editor_montar'));
 
-    console.log('Tabs de editor:', editorTabs.length);
-    console.log('Outras tabs do SEI:', otherTabs.length);
+    // console.log removido para produ��o
+    // console.log removido para produ��o
 
     // Limpar opções antigas
     targetTabSelect.innerHTML = '<option value="">Detectar automaticamente</option>';
@@ -823,7 +820,7 @@ async function loadAvailableTabs() {
       }
     }
 
-    console.log('Janelas carregadas com sucesso!');
+    // console.log removido para produ��o
   } catch (error) {
     console.error('Erro ao carregar janelas:', error);
     targetTabSelect.innerHTML = '<option value="">Erro ao carregar janelas</option>';
@@ -1403,13 +1400,8 @@ async function callOpenAi({ apiKey, model, temperature, signatarioNome, signatar
       cargo: signatarioCargo || '[CARGO DO SIGNATÁRIO]'
     });
     
-    // Debug: mostrar informações do signatário
-    console.log('🔍 DEBUG SIGNATÁRIO:', {
-      signatarioNome,
-      signatarioCargo,
-      templateOriginal: templateToUse,
-      templateSubstituido
-    });
+    // Debug: mostrar informações do signatário (removido para produção)
+    // // console.log removido para produ��o
 
     // Usar formato personalizado se fornecido
     instrucoesEstrutura = `
@@ -1747,9 +1739,9 @@ if (cancelCaptureButton) {
 }
 
 if (reloadTargetTabsButton) {
-  console.log('Botão de recarregar janelas encontrado');
+  // console.log removido para produ��o
   reloadTargetTabsButton.addEventListener("click", async () => {
-    console.log('Botão de recarregar clicado');
+    // console.log removido para produ��o
     reloadTargetTabsButton.disabled = true;
     reloadTargetTabsButton.textContent = "⏳ Carregando...";
     try {
@@ -1776,7 +1768,7 @@ document.querySelectorAll('input[name="documentType"]').forEach(radio => {
 
 // Event listener para modelo de documento
 documentModelSelect.addEventListener('change', () => {
-  console.log('Modelo selecionado:', documentModelSelect.value);
+  // console.log removido para produ��o
   updateModelPreview();
 });
 
@@ -1867,3 +1859,4 @@ if (fillContextExampleButton) {
 updateInterfaceMode();
 populateModelSelect();
 loadModelsFromStorage();
+
