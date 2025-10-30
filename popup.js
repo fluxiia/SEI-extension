@@ -36,6 +36,43 @@ const openCreditsButton = document.getElementById("openCreditsButton");
 const creditsModal = document.getElementById("creditsModal");
 const closeCreditsButton = document.getElementById("closeCreditsButton");
 
+// Bloqueio por política de uso (disclaimer)
+(async function enforceDisclaimerAcceptance() {
+  try {
+    const { disclaimerAccepted = false } = await new Promise((resolve) =>
+      chrome.storage.sync.get({ disclaimerAccepted: false }, resolve)
+    );
+
+    if (!disclaimerAccepted) {
+      // Desabilitar todas as ações do popup
+      try { generateButton.disabled = true; } catch (e) {}
+      try { writeManuallyButton && (writeManuallyButton.disabled = true); } catch (e) {}
+      try { useResponseButton.disabled = true; } catch (e) {}
+      try { captureTextButton && (captureTextButton.disabled = true); } catch (e) {}
+      try { confirmCaptureButton && (confirmCaptureButton.disabled = true); } catch (e) {}
+      try { cancelCaptureButton && (cancelCaptureButton.disabled = true); } catch (e) {}
+      try { reloadTargetTabsButton && (reloadTargetTabsButton.disabled = true); } catch (e) {}
+
+      setStatus("🔒 Você precisa aceitar a Política de Uso nas Configurações para utilizar a extensão.", true);
+
+      // Destacar botão de opções se existir
+      if (openOptionsButton) {
+        openOptionsButton.style.animation = "pulse 1.2s ease-in-out infinite";
+      }
+
+      // Abrir página de opções para o aceite e fechar o popup
+      chrome.runtime.openOptionsPage();
+      setTimeout(() => { try { window.close(); } catch (e) {} }, 300);
+      return;
+    }
+  } catch (e) {
+    // Em caso de erro, falhar fechando para evitar uso sem aceite
+    try { setStatus("🔒 Erro ao validar política de uso. Abra as opções e aceite o termo.", true); } catch (_) {}
+    try { chrome.runtime.openOptionsPage(); } catch (_) {}
+    try { window.close(); } catch (_) {}
+  }
+})();
+
 async function loadSettings() {
   return new Promise((resolve) => {
     chrome.storage.sync.get(
@@ -1859,4 +1896,6 @@ if (fillContextExampleButton) {
 updateInterfaceMode();
 populateModelSelect();
 loadModelsFromStorage();
+
+// As ferramentas avançadas agora estão disponíveis através do botão flutuante "SEI Tools" no editor do SEI
 

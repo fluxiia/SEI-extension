@@ -9,11 +9,13 @@ const signatarioNomeInput = document.getElementById("signatarioNome");
 const signatarioCargoInput = document.getElementById("signatarioCargo");
 const orgaoNomeInput = document.getElementById("orgaoNome");
 const orgaoSetoresInput = document.getElementById("orgaoSetores");
+const cienteDisclaimerInput = document.getElementById('cienteDisclaimer');
 // Removidos: templates antigos não são mais usados
 
 // Elementos das abas
 const tabButtons = document.querySelectorAll('.tab-button');
 const tabContents = document.querySelectorAll('.tab-content');
+const tabsHeader = document.querySelector('.tabs-header');
 
 // Elementos da aba de modelos
 const modelsList = document.getElementById('modelsList');
@@ -49,6 +51,7 @@ function loadSettings() {
       signatarioCargo: "",
       orgaoNome: "",
       orgaoSetores: "",
+      disclaimerAccepted: false,
       // Removidos: templates antigos
     },
     (settings) => {
@@ -60,6 +63,17 @@ function loadSettings() {
       signatarioCargoInput.value = settings.signatarioCargo;
       orgaoNomeInput.value = settings.orgaoNome;
       orgaoSetoresInput.value = settings.orgaoSetores;
+      if (cienteDisclaimerInput) {
+        cienteDisclaimerInput.checked = Boolean(settings.disclaimerAccepted);
+      }
+      // Conteúdos estáticos agora estão no HTML
+
+      // Se o disclaimer ainda não foi aceito, abrir a aba automaticamente
+      try {
+        if (!settings.disclaimerAccepted) {
+          switchTab('disclaimer');
+        }
+      } catch (e) {}
       // Removidos: templates antigos
       updateTempValue();
     }
@@ -86,6 +100,7 @@ form.addEventListener("submit", (event) => {
   const signatarioCargo = signatarioCargoInput.value.trim();
   const orgaoNome = orgaoNomeInput.value.trim();
   const orgaoSetores = orgaoSetoresInput.value.trim();
+  const disclaimerAccepted = cienteDisclaimerInput ? cienteDisclaimerInput.checked : false;
   // Removidos: templates antigos
 
   chrome.storage.sync.set({ 
@@ -97,6 +112,7 @@ form.addEventListener("submit", (event) => {
     signatarioCargo,
     orgaoNome,
     orgaoSetores,
+    disclaimerAccepted,
     // Removidos: templates antigos
   }, () => {
     setStatus("✅ Configurações salvas com sucesso!");
@@ -104,28 +120,87 @@ form.addEventListener("submit", (event) => {
 });
 
 // Função para trocar de aba
-function switchTab(tabName) {
-  // Remove classe active de todos os botões e conteúdos
-  tabButtons.forEach(button => button.classList.remove('active'));
-  tabContents.forEach(content => content.classList.remove('active'));
-  
-  // Adiciona classe active ao botão e conteúdo correspondentes
+function switchTab(tabName, { focusPanel = true, updateHash = true, persist = true } = {}) {
   const activeButton = document.querySelector(`[data-tab="${tabName}"]`);
   const activeContent = document.getElementById(`${tabName}-tab`);
-  
-  if (activeButton && activeContent) {
-    activeButton.classList.add('active');
-    activeContent.classList.add('active');
+
+  if (!activeButton || !activeContent) return;
+
+  // Atualizar classes e ARIA
+  tabButtons.forEach(button => {
+    const isActive = button === activeButton;
+    button.classList.toggle('active', isActive);
+    if (button.getAttribute('role') === 'tab') {
+      button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      button.setAttribute('tabindex', isActive ? '0' : '-1');
+    }
+  });
+
+  tabContents.forEach(content => {
+    const isActive = content === activeContent;
+    content.classList.toggle('active', isActive);
+    content.setAttribute('tabindex', isActive ? '0' : '-1');
+  });
+
+  if (focusPanel) {
+    // Dar foco ao painel para leitores de tela/navegação
+    activeContent.focus({ preventScroll: true });
+    // Garantir que o botão ativo esteja visível e focável via teclado
+    activeButton.focus({ preventScroll: true });
+  }
+
+  if (updateHash) {
+    try {
+      if (location.hash !== `#${tabName}`) {
+        history.replaceState(null, '', `#${tabName}`);
+      }
+    } catch (e) {}
+  }
+
+  if (persist && chrome?.storage?.sync) {
+    try {
+      chrome.storage.sync.set({ lastActiveTab: tabName });
+    } catch (e) {}
   }
 }
 
 // Event listeners para os botões das abas
 tabButtons.forEach(button => {
+  // Tornar apenas o ativo focável no ciclo de tabulação quando role=tab
+  if (button.getAttribute('role') === 'tab') {
+    const isActive = button.classList.contains('active');
+    button.setAttribute('tabindex', isActive ? '0' : '-1');
+  }
   button.addEventListener('click', () => {
     const tabName = button.getAttribute('data-tab');
-    switchTab(tabName);
+    switchTab(tabName, { focusPanel: true, updateHash: true, persist: true });
   });
 });
+
+// Navegação por teclado nas abas (ArrowLeft/ArrowRight/Home/End)
+if (tabsHeader) {
+  tabsHeader.addEventListener('keydown', (e) => {
+    const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
+    if (!keys.includes(e.key)) return;
+
+    const tabsArray = Array.from(tabButtons);
+    const currentIndex = tabsArray.findIndex(b => b.classList.contains('active'));
+    let nextIndex = currentIndex;
+
+    if (e.key === 'ArrowRight') nextIndex = (currentIndex + 1) % tabsArray.length;
+    if (e.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + tabsArray.length) % tabsArray.length;
+    if (e.key === 'Home') nextIndex = 0;
+    if (e.key === 'End') nextIndex = tabsArray.length - 1;
+
+    const nextButton = tabsArray[nextIndex];
+    if (nextButton) {
+      e.preventDefault();
+      nextButton.focus();
+      const tabName = nextButton.getAttribute('data-tab');
+      switchTab(tabName, { focusPanel: false, updateHash: true, persist: true });
+    }
+  });
+}
 
 // Funções para gerenciar modelos de documentos
 let documentModels = [];
@@ -395,5 +470,39 @@ document.addEventListener('click', (event) => {
   }
 });
 
-loadSettings();
+// Inicialização com hash/persistência respeitando o disclaimer
+function initializeTabsWithState(disclaimerAccepted) {
+  const hash = (location.hash || '').replace('#', '');
+  if (!disclaimerAccepted) {
+    // Força a aba de disclaimer quando não aceito
+    switchTab('disclaimer', { focusPanel: false, updateHash: true, persist: true });
+    return;
+  }
+
+  if (hash) {
+    switchTab(hash, { focusPanel: false, updateHash: false, persist: false });
+    return;
+  }
+
+  try {
+    chrome.storage.sync.get({ lastActiveTab: 'ai-model' }, ({ lastActiveTab }) => {
+      switchTab(lastActiveTab || 'ai-model', { focusPanel: false, updateHash: true, persist: false });
+    });
+  } catch (e) {
+    switchTab('ai-model', { focusPanel: false, updateHash: true, persist: false });
+  }
+}
+
+// Após carregar configurações, inicializar as abas considerando o estado
+const originalLoadSettings = loadSettings;
+function loadSettingsAndInitTabs() {
+  chrome.storage.sync.get({ disclaimerAccepted: false }, (settings) => {
+    // Carrega todas as configs normalmente
+    originalLoadSettings();
+    // Inicializa estado das abas
+    initializeTabsWithState(Boolean(settings.disclaimerAccepted));
+  });
+}
+
+loadSettingsAndInitTabs();
 loadDocumentModels();

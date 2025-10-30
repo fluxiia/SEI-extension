@@ -251,6 +251,26 @@ input[type="range"]::-moz-range-thumb:hover {
   accent-color: var(--color-primary);
 }
 
+.disclaimer-box {
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: #5d4037;
+  margin-bottom: 10px;
+}
+
+.disclaimer-box p { color: #5d4037; margin: 0 0 6px 0; }
+.api-tips { color: var(--color-text); }
+
+.api-tips h3 {
+  margin: 10px 0 6px 0;
+}
+
+.api-tips ol {
+  padding-left: 18px;
+}
+
 .form-actions {
   display: flex !important;
   flex-direction: column !important;

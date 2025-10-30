@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Como Usar SEI Extension</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #1976d2;
+            border-radius: 5px;
+        }
+        .code {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        .button {
+            background: #1976d2;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .button:hover {
+            background: #1565c0;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        h1, h2, h3 {
+            color: #1976d2;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .feature-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Como Usar a SEI Extension</h1>
+        
+        <div class="success">
+            <strong>✅ Pronto para usar!</strong> Os arquivos foram criados e estão prontos para integração.
+        </div>
+
+        <h2>📁 Arquivos Criados</h2>
+        <ul>
+            <li><strong>sei-extension-features.js</strong> - Biblioteca principal com todas as funcionalidades</li>
+            <li><strong>sei-extension-interface.html</strong> - Interface web completa</li>
+            <li><strong>SEI-EXTENSION-DOCUMENTATION.md</strong> - Documentação detalhada</li>
+        </ul>
+
+        <h2>🔧 Métodos de Acesso</h2>
+
+        <div class="step">
+            <h3>Método 1: Interface Web Completa</h3>
+            <p>Abra o arquivo <code>sei-extension-interface.html</code> no navegador para acessar todas as funcionalidades através de uma interface moderna e intuitiva.</p>
+            
+            <div class="code">
+                <!-- Abrir interface -->
+                <button onclick="window.open('sei-extension-interface.html', '_blank')" class="button">
+                    🎨 Abrir Interface SEI Extension
+                </button>
+            </div>
+            
+            <p><strong>Vantagens:</strong></p>
+            <ul>
+                <li>Interface visual completa</li>
+                <li>Configurações em modais</li>
+                <li>Estatísticas em tempo real</li>
+                <li>Fácil de usar</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>Método 2: Integração no SEI</h3>
+            <p>Para integrar diretamente no SEI, adicione o script ao seu sistema:</p>
+            
+            <div class="code">
+&lt;!-- Incluir no SEI --&gt;
+&lt;script src="sei-extension-features.js"&gt;&lt;/script&gt;
+
+&lt;script&gt;
+// Inicializar após carregar o editor SEI
+document.addEventListener('DOMContentLoaded', function() {
+    // Aguardar o editor carregar
+    setTimeout(function() {
+        if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances) {
+            const editorName = Object.keys(CKEDITOR.instances)[0];
+            if (editorName) {
+                SEIExtension.init(CKEDITOR.instances[editorName]);
+                console.log('SEI Extension inicializada!');
+            }
+        }
+    }, 2000);
+});
+&lt;/script&gt;
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Método 3: Console do Navegador</h3>
+            <p>Para testes rápidos, use o console do navegador (F12):</p>
+            
+            <div class="code">
+// Carregar a extensão
+const script = document.createElement('script');
+script.src = 'sei-extension-features.js';
+document.head.appendChild(script);
+
+// Aguardar carregar e usar
+script.onload = function() {
+    // Exemplos de uso
+    SEIExtension.setTextAlignment('center');
+    SEIExtension.addSigiloMark('tarja', 'CONFIDENCIAL');
+    SEIExtension.toggleDarkMode(true);
+};
+            </div>
+        </div>
+
+        <h2>🎯 Funcionalidades Principais</h2>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3>🎨 Formatação</h3>
+                <p><strong>Alinhamento:</strong> Esquerda, centro, direita, justificado</p>
+                <p><strong>Fonte:</strong> Aumentar/diminuir tamanho</p>
+                <p><strong>Texto:</strong> Primeira letra maiúscula</p>
+            </div>
+
+            <div class="feature-card">
+                <h3>🔒 Sigilo</h3>
+                <p><strong>Marca:</strong> Fundo amarelo</p>
+                <p><strong>Tarja:</strong> Fundo vermelho</p>
+                <p><strong>Caixa:</strong> Borda laranja</p>
+            </div>
+
+            <div class="feature-card">
+                <h3>📊 Tabelas</h3>
+                <p><strong>Criação:</strong> Tabelas rápidas</p>
+                <p><strong>Estilos:</strong> Zebra, bordas, hover</p>
+                <p><strong>Formatação:</strong> Automática</p>
+            </div>
+
+            <div class="feature-card">
+                <h3>🖼️ Imagens</h3>
+                <p><strong>Qualidade:</strong> 0-100%</p>
+                <p><strong>Redimensionar:</strong> Automático</p>
+                <p><strong>Otimização:</strong> Para web</p>
+            </div>
+
+            <div class="feature-card">
+                <h3>💾 Salvamento</h3>
+                <p><strong>Auto Save:</strong> Configurável</p>
+                <p><strong>Intervalo:</strong> 1-60 minutos</p>
+                <p><strong>Backup:</strong> 5 versões</p>
+            </div>
+
+            <div class="feature-card">
+                <h3>🔗 Referências</h3>
+                <p><strong>Links:</strong> Internos</p>
+                <p><strong>Notas:</strong> Rodapé</p>
+                <p><strong>Citações:</strong> Documentos</p>
+            </div>
+        </div>
+
+        <h2>⚡ Exemplos Práticos</h2>
+
+        <div class="step">
+            <h3>Exemplo 1: Documento com Sigilo</h3>
+            <div class="code">
+// Marcar informações sigilosas
+SEIExtension.addSigiloMark('tarja', 'DADOS PESSOAIS');
+SEIExtension.addSigiloMark('box', 'INFORMAÇÃO CONFIDENCIAL');
+
+// Criar tabela de dados
+SEIExtension.createQuickTable(4, 2);
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Exemplo 2: Documento Técnico</h3>
+            <div class="code">
+// Inserir referências
+SEIExtension.insertInternalReference('Ver seção 2.1', 'sec-2-1');
+SEIExtension.insertFootnote('Conforme Lei 12.527/2011');
+
+// Citar documento
+SEIExtension.insertDocumentCitation('123456', 'Parecer Técnico');
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Exemplo 3: Otimização</h3>
+            <div class="code">
+// Otimizar imagens
+SEIExtension.optimizeImageQuality(70);
+SEIExtension.resizeImages(800, 600);
+
+// Ativar auto save
+SEIExtension.toggleAutoSave(true, 3);
+            </div>
+        </div>
+
+        <h2>🛠️ Configuração Avançada</h2>
+
+        <div class="step">
+            <h3>Configurações Persistentes</h3>
+            <p>As configurações são salvas automaticamente no LocalStorage:</p>
+            <ul>
+                <li><strong>Modo Escuro:</strong> localStorage.getItem('sei_dark_mode')</li>
+                <li><strong>Modo Slim:</strong> localStorage.getItem('sei_slim_mode')</li>
+                <li><strong>Auto Save:</strong> localStorage.getItem('sei_autosave')</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ Importante:</strong> Certifique-se de que o arquivo <code>sei-extension-features.js</code> esteja acessível no mesmo diretório ou configure o caminho correto.
+        </div>
+
+        <h2>📱 Interface Mobile</h2>
+        <p>A interface é totalmente responsiva e funciona em dispositivos móveis, adaptando-se automaticamente ao tamanho da tela.</p>
+
+        <div class="success">
+            <strong>🎉 Pronto para usar!</strong> Agora você tem acesso a todas as funcionalidades avançadas do SEI Extension. 
+            Experimente a interface web para uma experiência completa ou integre diretamente no SEI para uso profissional.
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button onclick="window.open('sei-extension-interface.html', '_blank')" class="button" style="font-size: 18px; padding: 15px 30px;">
+                🚀 Abrir SEI Extension Agora
+            </button>
+        </div>
+    </div>
+</body>
+</html>

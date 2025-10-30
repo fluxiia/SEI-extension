@@ -17,6 +17,17 @@
       "js": ["contentScript.js"],
       "css": ["contentScript.css"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": ["*://*/sei/*"],
+      "js": ["content-script-sei-tools.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["sei-extension-features.js"],
+      "matches": ["<all_urls>"]
     }
   ],
   "action": {

@@ -18,15 +18,38 @@
 
       <!-- Sistema de Abas -->
       <div class="tabs-container">
-        <div class="tabs-header">
-          <button class="tab-button" data-tab="documents">📄 Estrutura do Órgão</button>
-          <button class="tab-button" data-tab="document-models">📝 Modelos</button>
-          <button class="tab-button active" data-tab="ai-model">🤖 Modelo de IA</button>
+        <div class="tabs-header" role="tablist" aria-label="Configurações SEI Smart">
+          <button class="tab-button" id="tab-disclaimer" role="tab" aria-selected="false" aria-controls="disclaimer-tab" data-tab="disclaimer">🔒 Política de uso responsável</button>
+          <button class="tab-button" id="tab-documents" role="tab" aria-selected="false" aria-controls="documents-tab" data-tab="documents">📄 Estrutura do Órgão</button>
+          <button class="tab-button" id="tab-document-models" role="tab" aria-selected="false" aria-controls="document-models-tab" data-tab="document-models">📝 Modelos</button>
+          <button class="tab-button active" id="tab-ai-model" role="tab" aria-selected="true" aria-controls="ai-model-tab" data-tab="ai-model">🤖 Modelo de IA</button>
         </div>
 
         <form id="settingsForm">
           <!-- Aba: Configurações do Modelo de IA -->
-          <div class="tab-content active" id="ai-model-tab">
+          <div class="tab-content active" id="ai-model-tab" role="tabpanel" aria-labelledby="tab-ai-model" tabindex="0">
+            <div class="form-section">
+              <h2 class="section-title">📘 Dicas para configurar a API</h2>
+              <div class="api-tips" id="apiTipsContent">
+                <div id="plataformAI_info" style="white-space: break-spaces;color: #616161;">
+                  <div class="alertaAttencionPro dialogBoxDiv" style="font-size: 11pt;line-height: 12pt;color: #616161;">
+                    <span style="margin-right: 5px;">ℹ️</span> Aproveite todo o potencial da inteligência artificial do <a href="https://chat.openai.com/chat" class="linkDialog" style="font-style: italic;font-size: 11pt;" target="_blank">ChatGPT</a> diretamente no editor de documentos do SEI. <br><br><span style="margin-left: 20px;"></span>Siga o passo-a-passo abaixo para cadastrar suas credenciais de acesso:<br><br>
+                  </div>
+                  <div class="alertaAttencionPro dialogBoxDiv" style="margin-left:20px;font-size: 11pt;line-height: 12pt;color: #616161;">
+                    1. Acesse o site da OpenAI (<a href="https://platform.openai.com/" class="linkDialog" style="font-style: italic;font-size: 11pt;" target="_blank">https://platform.openai.com/</a>) e clique em "Sign Up" no canto superior direito da tela.<br><br>
+                    2. Preencha o formulário de cadastro ou use Google/Microsoft.<br><br>
+                    3. Verifique seu e-mail e confirme o cadastro.<br><br>
+                    4. Insira seu número de celular e confirme por SMS.<br><br>
+                    5. Faça login e vá em "API Keys".<br><br>
+                    6. Clique em "Create new secret key" para gerar sua chave.<br><br>
+                    7. Guarde a chave com segurança (ela só aparece uma vez).<br><br>
+                    8. Em "Billing", adicione pagamento se necessário. Consulte preços: <a href="https://openai.com/pricing" target="_blank">https://openai.com/pricing</a><br><br>
+                    9. Cole a chave na aba 🤖 (Chave da API OpenAI).<br><br>
+                  </div>
+                </div>
+              </div>
+            </div>            
+            
             <div class="form-section">
               <h2 class="section-title">🔐 Autenticação</h2>
               
@@ -100,7 +123,7 @@
           </div>
 
           <!-- Aba: Informações sobre Documentos -->
-          <div class="tab-content" id="documents-tab">
+          <div class="tab-content" id="documents-tab" role="tabpanel" aria-labelledby="tab-documents" tabindex="-1">
             <div class="form-section">
               <h2 class="section-title">👤 Dados do Signatário</h2>
               
@@ -169,7 +192,7 @@
 
 
           <!-- Aba: Modelos de Documentos -->
-          <div class="tab-content" id="document-models-tab">
+          <div class="tab-content" id="document-models-tab" role="tabpanel" aria-labelledby="tab-document-models" tabindex="-1">
             <div class="form-section">
               <h2 class="section-title">📝 Modelos de Documentos</h2>
               <p class="field-hint">Gerencie os modelos padrão e crie modelos personalizados</p>
@@ -319,6 +342,50 @@ Atenciosamente,
               </div>
             </div>
           </div>
+          </div>
+
+          <!-- Aba: Disclaimer e Dicas da API -->
+          <div class="tab-content" id="disclaimer-tab" role="tabpanel" aria-labelledby="tab-disclaimer" tabindex="-1">
+            <div class="form-section">
+              <h2 class="section-title">🔒 Aviso de Uso Responsável</h2>
+              <div class="disclaimer-box" id="disclaimerContent">
+                <table role="presentation" cellspacing="0" border="0" style="width:100%;float:none;" align="left">
+                  <tbody>
+                    <tr>
+                      <td role="presentation" class="cke_dialog_ui_vbox_child">
+                        <div class="editorTextDisclaimer">
+                          <p><strong>Diretrizes para o uso responsável de ferramentas de Inteligência Artificial</strong></p>
+                          <p>1. Evite empregar IA em contextos sensíveis ou críticos.
+                          <br>Ferramentas automatizadas não devem ser utilizadas em situações que envolvam dados sigilosos, informações estratégicas ou decisões que possam gerar impacto administrativo, jurídico ou institucional relevante.
+                          </p>
+                          <p>2. Mantenha sempre a supervisão humana.
+                          <br>As respostas geradas por sistemas de IA devem ser analisadas, validadas e complementadas por profissionais responsáveis, assegurando correção e adequação ao contexto de uso.
+                          </p>
+                          <p>3. A responsabilidade é de quem assina.
+                          <br>Todo documento, parecer ou comunicação produzida com apoio de IA deve ser conferido e assumido integralmente pelo signatário, que responde pelo conteúdo final.
+                          </p>
+                          <p>4. Compreenda as limitações do modelo.
+                          <br>As respostas são baseadas em conteúdos previamente disponíveis na internet ou em bases públicas. Quando o contexto fornecido é insuficiente ou impreciso, o resultado pode ser inadequado e levar a interpretações equivocadas.
+                          </p>
+                          <p>5. Conheça os riscos e adote precauções.
+                          <br>O uso indevido da IA pode gerar falhas, comprometer a segurança da informação ou produzir efeitos legais indesejados. Utilize a ferramenta com discernimento e dentro dos limites éticos e normativos.
+                          </p>
+                          <p>6. Verifique a conformidade antes da utilização.
+                          <br>Antes de empregar qualquer sistema de IA, confirme se ele está em conformidade com as normas internas sobre o uso seguro de tecnologias e computação em nuvem do seu órgão ou instituição.                       
+                        </div> 
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <label class="checkbox-row" for="cienteDisclaimer">
+                <input type="checkbox" id="cienteDisclaimer" name="cienteDisclaimer" />
+                <span>Estou ciente e entendo os riscos</span>
+              </label>
+            </div>
+
+
+          </div>
 
         </form>
       </div>
@@ -338,7 +405,8 @@ Atenciosamente,
         text-align: center !important;
         background: #ffffff !important;
         border-radius: 12px !important;
-        border: 2px solid #007bff !important;
+        /* Removido: borda azul */
+        border: none !important;
         box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15) !important;
         position: relative !important;
         z-index: 1000 !important;
@@ -384,6 +452,7 @@ Atenciosamente,
         transform: translateY(0) !important;
         box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3) !important;
       }
+      .btn-primary:focus { outline: none !important; }
       
       #saveStatus {
         margin-top: 1rem;

@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEI Extension - Interface Avançada</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .toolbar {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .toolbar-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .toolbar-group h3 {
+            font-size: 0.9em;
+            color: #666;
+            margin-right: 10px;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #1976d2;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1565c0;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #1976d2;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .feature-card h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .feature-card p {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .feature-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .input-group input,
+        .input-group select,
+        .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-header h2 {
+            color: #1976d2;
+            margin: 0;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .status-bar {
+            background: #e9ecef;
+            padding: 10px 20px;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #1976d2;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            flex: 1;
+        }
+
+        .stat-item .number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #1976d2;
+        }
+
+        .stat-item .label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .toolbar-group {
+                justify-content: center;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-magic"></i> SEI Extension</h1>
+            <p>Ferramentas avançadas para o Sistema Eletrônico de Informações</p>
+        </div>
+
+        <div class="toolbar">
+            <div class="toolbar-group">
+                <h3>Formatação</h3>
+                <button class="btn btn-primary" data-action="setTextAlignment" data-param="left">
+                     Esquerda
+                </button>
+                <button class="btn btn-primary" data-action="setTextAlignment" data-param="center">
+                     Centro
+                </button>
+                <button class="btn btn-primary" data-action="setTextAlignment" data-param="right">
+                     Direita
+                </button>
+                <button class="btn btn-primary" data-action="setTextAlignment" data-param="justify">
+                     Justificar
+                </button>
+            </div>
+
+            <div class="toolbar-group">
+                <h3>Fonte</h3>
+                <button class="btn btn-secondary" data-action="changeFontSize" data-param="increase">
+                    <i class="fas fa-plus"></i> A+
+                </button>
+                <button class="btn btn-secondary" data-action="changeFontSize" data-param="decrease">
+                    <i class="fas fa-minus"></i> A-
+                </button>
+                <button class="btn btn-info" data-action="convertFirstLetter">
+                    <i class="fas fa-text-height"></i> Maiúscula
+                </button>
+            </div>
+
+            <div class="toolbar-group">
+                <h3>Sigilo</h3>
+                <button class="btn btn-warning" data-action="openSigiloModal">
+                    <i class="fas fa-shield-alt"></i> Marca
+                </button>
+                <button class="btn btn-danger" data-action="addSigiloMark" data-param="tarja">
+                    <i class="fas fa-ban"></i> Tarja
+                </button>
+                <button class="btn btn-warning" data-action="addSigiloMark" data-param="box">
+                    <i class="fas fa-square"></i> Caixa
+                </button>
+            </div>
+
+            <div class="toolbar-group">
+                <h3>Modo</h3>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="darkModeToggle" data-change="toggleDarkMode">
+                    <span class="slider"></span>
+                </label>
+                <span style="margin-left: 10px;">Escuro</span>
+                
+                <label class="toggle-switch" style="margin-left: 20px;">
+                    <input type="checkbox" id="slimModeToggle" data-change="toggleSlimMode">
+                    <span class="slider"></span>
+                </label>
+                <span style="margin-left: 10px;">Slim</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3><i class="fas fa-table"></i> Tabelas Rápidas</h3>
+                    <p>Crie tabelas rapidamente com configurações predefinidas e estilos personalizados.</p>
+                    <div class="feature-actions">
+                        <button class="btn btn-primary" data-action="openTableModal">
+                            <i class="fas fa-plus"></i> Nova Tabela
+                        </button>
+                        <button class="btn btn-secondary" data-action="applyTableStyle" data-param="zebra">
+                            <i class="fas fa-paint-brush"></i> Estilo
+                        </button>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <h3><i class="fas fa-image"></i> Otimização de Imagens</h3>
+                    <p>Redimensione e otimize a qualidade das imagens automaticamente.</p>
+                    <div class="feature-actions">
+                        <button class="btn btn-primary" data-action="openImageModal">
+                            <i class="fas fa-cog"></i> Configurar
+                        </button>
+                        <button class="btn btn-success" data-action="optimizeImageQuality" data-param="60">
+                            <i class="fas fa-compress"></i> Otimizar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <h3><i class="fas fa-save"></i> Salvamento Automático</h3>
+                    <p>Configure o salvamento automático do documento em intervalos personalizados.</p>
+                    <div class="feature-actions">
+                        <button class="btn btn-primary" data-action="openAutoSaveModal">
+                            <i class="fas fa-cog"></i> Configurar
+                        </button>
+                        <button class="btn btn-success" data-action="saveDocument">
+                            <i class="fas fa-save"></i> Salvar Agora
+                        </button>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <h3><i class="fas fa-link"></i> Referências e Citações</h3>
+                    <p>Insira referências internas, notas de rodapé e citações de documentos.</p>
+                    <div class="feature-actions">
+                        <button class="btn btn-primary" data-action="openReferenceModal">
+                            <i class="fas fa-plus"></i> Nova Referência
+                        </button>
+                        <button class="btn btn-info" data-action="openCitationModal">
+                            <i class="fas fa-quote-left"></i> Citação
+                        </button>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <h3><i class="fas fa-qrcode"></i> QR Code</h3>
+                    <p>Gere códigos QR para URLs e insira no documento.</p>
+                    <div class="feature-actions">
+                        <button class="btn btn-primary" data-action="openQRModal">
+                            <i class="fas fa-qrcode"></i> Gerar QR
+                        </button>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <h3><i class="fas fa-file-import"></i> Import/Export</h3>
+                    <p>Importe documentos de arquivos e exporte para diferentes formatos.</p>
+                    <div class="feature-actions">
+                        <button class="btn btn-primary" data-action="openImportModal">
+                            <i class="fas fa-upload"></i> Importar
+                        </button>
+                        <button class="btn btn-success" data-action="exportToHTML">
+                            <i class="fas fa-download"></i> Exportar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="number" id="wordCount">0</div>
+                    <div class="label">Palavras</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number" id="charCount">0</div>
+                    <div class="label">Caracteres</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number" id="imageCount">0</div>
+                    <div class="label">Imagens</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <div>
+                <i class="fas fa-circle" style="color: #28a745;"></i> SEI Extension Ativa
+            </div>
+            <div>
+                Última atualização: <span id="lastUpdate">Agora</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Sigilo -->
+    <div id="sigiloModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-shield-alt"></i> Configurar Sigilo</h2>
+                <span class="close" data-action="closeModal" data-param="sigiloModal">&times;</span>
+            </div>
+            <div class="input-group">
+                <label>Texto para marcar:</label>
+                <input type="text" id="sigiloText" placeholder="Digite o texto a ser marcado">
+            </div>
+            <div class="input-group">
+                <label>Tipo de marcação:</label>
+                <select id="sigiloType">
+                    <option value="mark">Marca (fundo amarelo)</option>
+                    <option value="tarja">Tarja (fundo vermelho)</option>
+                    <option value="box">Caixa (borda laranja)</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" data-action="applySigilo">
+                <i class="fas fa-check"></i> Aplicar
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal para Tabela -->
+    <div id="tableModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-table"></i> Criar Tabela</h2>
+                <span class="close" data-action="closeModal" data-param="tableModal">&times;</span>
+            </div>
+            <div class="input-group">
+                <label>Número de linhas:</label>
+                <input type="number" id="tableRows" value="3" min="1" max="20">
+            </div>
+            <div class="input-group">
+                <label>Número de colunas:</label>
+                <input type="number" id="tableCols" value="3" min="1" max="20">
+            </div>
+            <button class="btn btn-primary" data-action="createTable">
+                <i class="fas fa-plus"></i> Criar Tabela
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal para Imagens -->
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-image"></i> Configurar Imagens</h2>
+                <span class="close" data-action="closeModal" data-param="imageModal">&times;</span>
+            </div>
+            <div class="input-group">
+                <label>Qualidade (0-100):</label>
+                <input type="range" id="imageQuality" min="0" max="100" value="60">
+                <span id="qualityValue">60%</span>
+            </div>
+            <div class="input-group">
+                <label>Largura máxima (px):</label>
+                <input type="number" id="maxWidth" value="600" min="100" max="2000">
+            </div>
+            <div class="input-group">
+                <label>Altura máxima (px):</label>
+                <input type="number" id="maxHeight" value="400" min="100" max="2000">
+            </div>
+            <button class="btn btn-primary" data-action="applyImageSettings">
+                <i class="fas fa-check"></i> Aplicar Configurações
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal para Auto Save -->
+    <div id="autoSaveModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-save"></i> Salvamento Automático</h2>
+                <span class="close" data-action="closeModal" data-param="autoSaveModal">&times;</span>
+            </div>
+            <div class="input-group">
+                <label>
+                    <input type="checkbox" id="enableAutoSave" data-change="toggleAutoSave">
+                    Ativar salvamento automático
+                </label>
+            </div>
+            <div class="input-group">
+                <label>Intervalo (minutos):</label>
+                <input type="number" id="autoSaveInterval" value="5" min="1" max="60">
+            </div>
+            <button class="btn btn-primary" data-action="saveAutoSaveSettings">
+                <i class="fas fa-check"></i> Salvar Configurações
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal para Referências -->
+    <div id="referenceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-link"></i> Nova Referência</h2>
+                <span class="close" data-action="closeModal" data-param="referenceModal">&times;</span>
+            </div>
+            <div class="input-group">
+                <label>Texto da referência:</label>
+                <input type="text" id="refText" placeholder="Ex: Ver item 1.2">
+            </div>
+            <div class="input-group">
+                <label>ID do elemento alvo:</label>
+                <input type="text" id="refTarget" placeholder="Ex: item-1-2">
+            </div>
+            <button class="btn btn-primary" data-action="insertReference">
+                <i class="fas fa-plus"></i> Inserir Referência
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal para Citação -->
+    <div id="citationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-quote-left"></i> Nova Citação</h2>
+                <span class="close" data-action="closeModal" data-param="citationModal">&times;</span>
+            </div>
+            <div class="input-group">
+                <label>Número do protocolo:</label>
+                <input type="text" id="protocolNumber" placeholder="Ex: 123456">
+            </div>
+            <div class="input-group">
+                <label>Título do documento:</label>
+                <input type="text" id="documentTitle" placeholder="Ex: Parecer Técnico">
+            </div>
+            <button class="btn btn-primary" data-action="insertCitation">
+                <i class="fas fa-plus"></i> Inserir Citação
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal para QR Code -->
+    <div id="qrModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-qrcode"></i> Gerar QR Code</h2>
+                <span class="close" data-action="closeModal" data-param="qrModal">&times;</span>
+            </div>
+            <div class="input-group">
+                <label>URL:</label>
+                <input type="url" id="qrUrl" placeholder="https://exemplo.com">
+            </div>
+            <div class="input-group">
+                <label>Tamanho (px):</label>
+                <input type="number" id="qrSize" value="150" min="50" max="500">
+            </div>
+            <button class="btn btn-primary" data-action="generateQR">
+                <i class="fas fa-qrcode"></i> Gerar QR Code
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal para Import -->
+    <div id="importModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-upload"></i> Importar Documento</h2>
+                <span class="close" data-action="closeModal" data-param="importModal">&times;</span>
+            </div>
+            <div class="input-group">
+                <label>Selecionar arquivo:</label>
+                <input type="file" id="importFile" accept=".html,.txt,.docx">
+            </div>
+            <button class="btn btn-primary" data-action="importDocument">
+                <i class="fas fa-upload"></i> Importar
+            </button>
+        </div>
+    </div>
+
+    <script src="sei-extension-features.js"></script>
+    <script>
+        // Funções da interface
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function openSigiloModal() {
+            openModal('sigiloModal');
+        }
+
+        function openTableModal() {
+            openModal('tableModal');
+        }
+
+        function openImageModal() {
+            openModal('imageModal');
+        }
+
+        function openAutoSaveModal() {
+            openModal('autoSaveModal');
+        }
+
+        function openReferenceModal() {
+            openModal('referenceModal');
+        }
+
+        function openCitationModal() {
+            openModal('citationModal');
+        }
+
+        function openQRModal() {
+            openModal('qrModal');
+        }
+
+        function openImportModal() {
+            openModal('importModal');
+        }
+
+        function applySigilo() {
+            const text = document.getElementById('sigiloText').value;
+            const type = document.getElementById('sigiloType').value;
+            
+            if (text) {
+                addSigiloMark(type, text);
+            } else {
+                addSigiloMark(type);
+            }
+            
+            closeModal('sigiloModal');
+        }
+
+        function createTable() {
+            const rows = parseInt(document.getElementById('tableRows').value);
+            const cols = parseInt(document.getElementById('tableCols').value);
+            
+            createQuickTable(rows, cols);
+            closeModal('tableModal');
+        }
+
+        function applyImageSettings() {
+            const quality = parseInt(document.getElementById('imageQuality').value);
+            const maxWidth = parseInt(document.getElementById('maxWidth').value);
+            const maxHeight = parseInt(document.getElementById('maxHeight').value);
+            
+            optimizeImageQuality(quality);
+            resizeImages(maxWidth, maxHeight);
+            closeModal('imageModal');
+        }
+
+        function saveAutoSaveSettings() {
+            const enabled = document.getElementById('enableAutoSave').checked;
+            const interval = parseInt(document.getElementById('autoSaveInterval').value);
+            
+            toggleAutoSave(enabled, interval);
+            closeModal('autoSaveModal');
+        }
+
+        function insertReference() {
+            const text = document.getElementById('refText').value;
+            const target = document.getElementById('refTarget').value;
+            
+            if (text && target) {
+                insertInternalReference(text, target);
+                closeModal('referenceModal');
+            }
+        }
+
+        function insertCitation() {
+            const protocol = document.getElementById('protocolNumber').value;
+            const title = document.getElementById('documentTitle').value;
+            
+            if (protocol && title) {
+                insertDocumentCitation(protocol, title);
+                closeModal('citationModal');
+            }
+        }
+
+        function generateQR() {
+            const url = document.getElementById('qrUrl').value;
+            const size = parseInt(document.getElementById('qrSize').value);
+            
+            if (url) {
+                generateQRCode(url, size);
+                closeModal('qrModal');
+            }
+        }
+
+        function importDocument() {
+            const fileInput = document.getElementById('importFile');
+            const file = fileInput.files[0];
+            
+            if (file) {
+                importDocument(file);
+                closeModal('importModal');
+            }
+        }
+
+        // Atualizar estatísticas
+        function updateStats() {
+            document.getElementById('wordCount').textContent = countWords();
+            document.getElementById('charCount').textContent = countCharacters();
+            
+            // Contar imagens (simulado)
+            const imageCount = document.querySelectorAll('img').length;
+            document.getElementById('imageCount').textContent = imageCount;
+        }
+
+        // Atualizar valor do range de qualidade
+        document.getElementById('imageQuality').addEventListener('input', function() {
+            document.getElementById('qualityValue').textContent = this.value + '%';
+        });
+
+        // Fechar modais clicando fora
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+
+        // Inicializar interface
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+            setInterval(updateStats, 5000); // Atualizar a cada 5 segundos
+            
+            // Carregar configurações salvas
+            const savedDarkMode = localStorage.getItem('sei_dark_mode') === 'true';
+            const savedSlimMode = localStorage.getItem('sei_slim_mode') === 'true';
+            
+            document.getElementById('darkModeToggle').checked = savedDarkMode;
+            document.getElementById('slimModeToggle').checked = savedSlimMode;
+        });
+
+        // Adicionar event listeners para todos os botões
+        document.addEventListener('DOMContentLoaded', function() {
+            // Botões com data-action
+            document.querySelectorAll('[data-action]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const action = this.getAttribute('data-action');
+                    const param = this.getAttribute('data-param');
+                    
+                    if (typeof window[action] === 'function') {
+                        if (param) {
+                            window[action](param);
+                        } else {
+                            window[action]();
+                        }
+                    }
+                });
+            });
+            
+            // Inputs com data-change
+            document.querySelectorAll('[data-change]').forEach(input => {
+                input.addEventListener('change', function() {
+                    const changeFunction = this.getAttribute('data-change');
+                    if (typeof window[changeFunction] === 'function') {
+                        window[changeFunction](this.checked);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
