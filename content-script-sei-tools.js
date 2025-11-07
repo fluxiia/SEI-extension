@@ -9,6 +9,7 @@ const SEI_TOOLS_CONFIG = {
     panelId: 'sei-extension-tools-panel',
     version: '1.0.0'
 };
+const SEI_PRO_ARVORE_SCRIPT_ID = 'sei-pro-arvore-upload-script';
 
 // Variáveis globais
 let toolsButton = null;
@@ -52,12 +53,18 @@ function diagnosticarAmbiente() {
  * Inicializa o botão flutuante no CKEditor
  */
 function initFloatingButton() {
-    // Verificar se já existe
-    if (document.getElementById(SEI_TOOLS_CONFIG.buttonId)) {
-        return;
+    try {
+        const topDoc = window.top.document;
+        const topExists = !!topDoc;
+        if (topExists && topDoc.getElementById(SEI_TOOLS_CONFIG.buttonId)) {
+            return;
+        }
+    } catch (e) {
+        if (document.getElementById(SEI_TOOLS_CONFIG.buttonId)) {
+            return;
+        }
     }
 
-    // Criar botão imediatamente, não aguardar CKEditor
     createFloatingButton();
     loadSEIExtension();
 
@@ -105,18 +112,23 @@ function initFloatingButton() {
  * Cria o botão flutuante
  */
 function createFloatingButton() {
-    
-    // Criar botão flutuante
-    toolsButton = document.createElement('div');
+    const hostDoc = (function () {
+        try {
+            if (window.top && window.top.document && window.top.document.body) {
+                return window.top.document;
+            }
+        } catch (err) {
+        }
+        return document;
+    })();
+    toolsButton = hostDoc.createElement('div');
     toolsButton.id = SEI_TOOLS_CONFIG.buttonId;
     toolsButton.innerHTML = `
         <div class="sei-tools-button">
             <span style="font-size: 16px;">🛠️</span>
-            <span>Tools</span>
         </div>
     `;
-    
-    // Estilos do botão
+
     toolsButton.style.cssText = `
         position: fixed;
         bottom: 24px;
@@ -139,67 +151,6 @@ function createFloatingButton() {
         font-weight: 600;
     `;
 
-    // Restaurar posição salva
-    try {
-        const saved = JSON.parse(localStorage.getItem('sei_tools_button_pos') || 'null');
-        if (saved && typeof saved.top === 'number' && typeof saved.left === 'number') {
-            toolsButton.style.top = saved.top + 'px';
-            toolsButton.style.left = saved.left + 'px';
-            toolsButton.style.bottom = 'auto';
-            toolsButton.style.right = 'auto';
-        }
-    } catch (e) {}
-
-    // Tornar arrastável
-    let draggingBtn = false;
-    let startXBtn = 0, startYBtn = 0, startTopBtn = 0, startLeftBtn = 0;
-
-    const onMoveBtn = (ev) => {
-        if (!draggingBtn) return;
-        ev.preventDefault();
-        const dx = ev.clientX - startXBtn;
-        const dy = ev.clientY - startYBtn;
-        let newTop = startTopBtn + dy;
-        let newLeft = startLeftBtn + dx;
-        const maxTop = window.innerHeight - toolsButton.offsetHeight - 8;
-        const maxLeft = window.innerWidth - toolsButton.offsetWidth - 8;
-        newTop = Math.max(8, Math.min(maxTop, newTop));
-        newLeft = Math.max(8, Math.min(maxLeft, newLeft));
-        toolsButton.style.top = newTop + 'px';
-        toolsButton.style.left = newLeft + 'px';
-        toolsButton.style.bottom = 'auto';
-        toolsButton.style.right = 'auto';
-    };
-
-    const onUpBtn = () => {
-        if (!draggingBtn) return;
-        draggingBtn = false;
-        document.removeEventListener('mousemove', onMoveBtn);
-        document.removeEventListener('mouseup', onUpBtn);
-        try {
-            const rect = toolsButton.getBoundingClientRect();
-            localStorage.setItem('sei_tools_button_pos', JSON.stringify({ top: Math.round(rect.top), left: Math.round(rect.left) }));
-        } catch (e) {}
-    };
-
-    toolsButton.addEventListener('mousedown', (ev) => {
-        if (ev.button !== 0) return;
-        // Evitar conflito com click para abrir o painel: só arrasta se mover
-        draggingBtn = true;
-        startXBtn = ev.clientX;
-        startYBtn = ev.clientY;
-        const rect = toolsButton.getBoundingClientRect();
-        startTopBtn = rect.top;
-        startLeftBtn = rect.left;
-        toolsButton.style.top = startTopBtn + 'px';
-        toolsButton.style.left = startLeftBtn + 'px';
-        toolsButton.style.bottom = 'auto';
-        toolsButton.style.right = 'auto';
-        document.addEventListener('mousemove', onMoveBtn);
-        document.addEventListener('mouseup', onUpBtn);
-    });
-
-    // Hover effect
     toolsButton.addEventListener('mouseenter', () => {
         toolsButton.style.transform = 'translateY(-2px)';
         toolsButton.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
@@ -210,11 +161,13 @@ function createFloatingButton() {
         toolsButton.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
     });
 
-    // Click handler
     toolsButton.addEventListener('click', toggleToolsPanel);
 
-    // Adicionar ao body
-    document.body.appendChild(toolsButton);
+    if (hostDoc.body) {
+        hostDoc.body.appendChild(toolsButton);
+    } else {
+        hostDoc.addEventListener('DOMContentLoaded', () => hostDoc.body.appendChild(toolsButton), { once: true });
+    }
 }
 
 /**
@@ -714,10 +667,18 @@ function openToolsPanel() {
  * Fecha o painel
  */
 function closeToolsPanel() {
-    if (toolsPanel) {
-        toolsPanel.style.transform = 'translateX(100%)';
-        isPanelVisible = false;
-    }
+    try {
+        if (toolsPanel) {
+            // Remover do DOM para encerrar completamente
+            if (toolsPanel.parentNode) {
+                toolsPanel.parentNode.removeChild(toolsPanel);
+            } else if (typeof toolsPanel.remove === 'function') {
+                toolsPanel.remove();
+            }
+            toolsPanel = null;
+        }
+    } catch (e) {}
+    isPanelVisible = false;
 }
 
 /**
@@ -1738,6 +1699,8 @@ function tryInit() {
     // Executar diagnóstico
     diagnosticarAmbiente();
     
+    injectSeiProArvoreScript();
+
     initFloatingButton();
 }
 
@@ -1756,6 +1719,40 @@ setTimeout(tryInit, 2000);
 
 // Tentar após 5 segundos (fallback)
 setTimeout(tryInit, 5000);
+
+function injectSeiProArvoreScript() {
+    try {
+        if (document.getElementById(SEI_PRO_ARVORE_SCRIPT_ID)) {
+            return;
+        }
+        const root = document.documentElement;
+        if (root) {
+            if (!root.hasAttribute('data-sei-pro-dropzone-src')) {
+                try {
+                    const dropSrc = chrome.runtime.getURL('lib/dropzone.min.js');
+                    root.setAttribute('data-sei-pro-dropzone-src', dropSrc);
+                } catch (dropErr) {}
+            }
+            if (root.getAttribute('data-sei-pro-arvore-injected') === '1') {
+                return;
+            }
+            root.setAttribute('data-sei-pro-arvore-injected', '1');
+        }
+
+        chrome.runtime.sendMessage({ action: 'injectSeiProArvore' }, (response) => {
+            if (chrome.runtime.lastError) {
+                try { root && root.removeAttribute('data-sei-pro-arvore-injected'); } catch (e) {}
+                console.warn('Falha ao solicitar injeção do SEI Pro Árvore:', chrome.runtime.lastError.message);
+                return;
+            }
+            if (!response || response.success !== true) {
+                try { root && root.removeAttribute('data-sei-pro-arvore-injected'); } catch (e) {}
+                console.warn('Retorno inesperado ao injetar SEI Pro Árvore:', response && response.error);
+            }
+        });
+    } catch (err) {
+    }
+}
 
 // Função para aguardar todas as funções carregarem
 function waitForAllFunctions() {

@@ -16,17 +16,23 @@
       "matches": ["*://*/sei/*"],
       "js": ["contentScript.js"],
       "css": ["contentScript.css"],
-      "run_at": "document_idle"
+      "run_at": "document_idle",
+      "all_frames": true
     },
     {
       "matches": ["*://*/sei/*"],
       "js": ["content-script-sei-tools.js"],
-      "run_at": "document_idle"
+      "run_at": "document_idle",
+      "all_frames": true
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["sei-extension-features.js"],
+      "resources": [
+        "sei-extension-features.js",
+        "sei-pro-arvore.js",
+        "lib/dropzone.min.js"
+      ],
       "matches": ["<all_urls>"]
     }
   ],
