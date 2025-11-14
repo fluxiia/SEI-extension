@@ -2583,6 +2583,374 @@
       };
     }
 
+    function resolveContainerUploadElement(){
+      var fallback = window.__seiProArvoreFallbackSelector || fallbackSelector;
+      var target = null;
+      try {
+        if (typeof containerUpload !== 'undefined') {
+          target = containerUpload;
+        }
+      } catch(e) {}
+      try {
+        if (!target && window.arvoreDropzone && window.arvoreDropzone.element) {
+          target = window.arvoreDropzone.element;
+        }
+      } catch(e) {}
+      return target ? $(target) : $(fallback);
+    }
+
+    function extractNrSeiFromName(nameDoc){
+      if (!nameDoc || typeof nameDoc !== 'string') return '';
+      var normalized = nameDoc.replace(/[_:]/g, ' ');
+      var match = normalized.match(/\d{5,}/);
+      if (match && match[0]) return match[0];
+      if (typeof parentCandidate.getNrSei === 'function') {
+        try { return parentCandidate.getNrSei(nameDoc); } catch(e){}
+      }
+      return normalized.trim();
+    }
+
+    if (typeof window.getDuplicateDoc !== "function") {
+      window.getDuplicateDoc = function(nameDoc, paramDoc, newproc, openEditor, callback, callback_error) {
+        nameDoc = typeof nameDoc === 'string' ? nameDoc : '';
+        paramDoc = paramDoc && typeof paramDoc === 'object' ? paramDoc : {};
+        var shouldOpenEditor = (typeof openEditor === 'undefined') ? true : !!openEditor;
+        var onSuccess = (typeof callback === 'function') ? callback : null;
+        var onError = (typeof callback_error === 'function') ? callback_error : null;
+
+        if (newproc) {
+          var arrayCurrentCloneDoc = {
+            nameDoc: nameDoc,
+            paramDoc: paramDoc || false
+          };
+          if (typeof setOptionsPro === 'function') {
+            try { setOptionsPro('currentCloneDoc', arrayCurrentCloneDoc); } catch(e){}
+          }
+          try {
+            if (parentCandidate && typeof parentCandidate.loadingButtonConfirm === 'function') {
+              parentCandidate.loadingButtonConfirm(false);
+            }
+          } catch(e){}
+          try {
+            if (parentCandidate && typeof parentCandidate.resetDialogBoxPro === 'function') {
+              parentCandidate.resetDialogBoxPro('dialogBoxPro');
+            }
+          } catch(e){}
+
+          var newPage = (typeof url_host !== 'undefined' ? url_host : '') + '?acao=procedimento_trabalhar&id_procedimento=' + newproc + '#&acao_pro=duplicar_documento';
+          var win = window.open(newPage, '_blank');
+          if (win && typeof win.focus === 'function') {
+            win.focus();
+          } else {
+            window.alert('Por favor, permita popups para essa página');
+          }
+          return;
+        }
+
+        var itemSelected = false;
+        if (!nameDoc) {
+          openAlertDuplicateDoc('Erro ao encontrar o documento de modelo');
+          return;
+        }
+
+        var nrSei = extractNrSeiFromName(nameDoc);
+        var href = null;
+        try {
+          if (parentCandidate && parentCandidate.jmespath && typeof parentCandidate.jmespath.search === 'function') {
+            href = parentCandidate.jmespath.search(window.arrayLinksArvore, "[?name=='Incluir Documento'].url | [0]");
+          } else if (typeof parent !== 'undefined' && parent !== null && parent.jmespath && typeof parent.jmespath.search === 'function') {
+            href = parent.jmespath.search(window.arrayLinksArvore, "[?name=='Incluir Documento'].url | [0]");
+          }
+        } catch(e) {}
+        if (!href && Array.isArray(window.arrayLinksArvore)) {
+          for (var i = 0; i < window.arrayLinksArvore.length; i++) {
+            if (window.arrayLinksArvore[i] && window.arrayLinksArvore[i].name === 'Incluir Documento') {
+              href = window.arrayLinksArvore[i].url;
+              break;
+            }
+          }
+        }
+
+        if (!href) {
+          openAlertDuplicateDoc('Erro ao localizar o link de inserir documento. Verifique se o processo encontra-se aberto em sua unidade!');
+          return;
+        }
+
+        href = ensureHttps(href);
+        $.ajax({ url: href }).done(function(html){
+          var $html = $(html);
+          var $rows = $html.find('#tblSeries tbody tr');
+          if (!$rows.length) {
+            openAlertDuplicateDoc('Erro ao selecionar o tipo de documento');
+            return;
+          }
+
+          $rows.each(function(){
+            var $row = $(this);
+            var text = ($row.data('desc') || '').toString().trim();
+            if (!text) return;
+            var value = $row.find('input').val();
+            var urlDoc = $row.find('a.ancoraOpcao').attr('href');
+            var checkPostEl = $html.find('#tblSeries').find('a.ancoraOpcao').attr('href');
+            var checkPost = (typeof checkPostEl !== 'undefined' && checkPostEl === '#');
+            var nameOption = escapeRegExp(text.replace(/_|:/g, ' '));
+            var normalizedDoc = nameDoc.replace(/_|:/g, ' ');
+            var reg = new RegExp('^\\b' + nameOption, 'igm');
+            var docNameNormalized = normalizedDoc;
+            try {
+              if (parentCandidate && typeof parentCandidate.removeAcentos === 'function') {
+                docNameNormalized = parentCandidate.removeAcentos(docNameNormalized.trim().toLowerCase());
+              } else {
+                docNameNormalized = docNameNormalized.trim().toLowerCase();
+              }
+            } catch(e) {
+              docNameNormalized = docNameNormalized.trim().toLowerCase();
+            }
+            var optionNormalized = text;
+            try {
+              if (parentCandidate && typeof parentCandidate.removeAcentos === 'function') {
+                optionNormalized = parentCandidate.removeAcentos(text.toLowerCase());
+              } else {
+                optionNormalized = text.toLowerCase();
+              }
+            } catch(e) {
+              optionNormalized = text.toLowerCase();
+            }
+            if (!reg.test(docNameNormalized)) return;
+            if (typeof urlDoc === 'undefined' || optionNormalized === 'externo') return;
+            itemSelected = true;
+            if (checkPost) {
+              window.ajaxPostDuplicateArvore($html, value, nrSei, paramDoc, shouldOpenEditor, onSuccess, onError);
+            } else {
+              window.ajaxGetDuplicateArvore(urlDoc, nrSei, paramDoc, shouldOpenEditor, onSuccess, onError);
+            }
+            return false;
+          });
+
+          if (!itemSelected) {
+            openAlertDuplicateDoc('Erro ao selecionar o tipo de documento');
+          }
+        }).fail(function(){
+          openAlertDuplicateDoc('Erro ao acessar o formulário de duplicação');
+        });
+      };
+    }
+
+    if (typeof window.ajaxPostDuplicateArvore !== "function") {
+      window.ajaxPostDuplicateArvore = function($html, value, nr_sei, paramDoc, openEditor, callback, callback_error) {
+        if (!$html || typeof $html.find !== 'function') {
+          if (typeof callback_error === 'function') callback_error();
+          return;
+        }
+        var urlForm = ensureHttps($html.find('#frmDocumentoEscolherTipo').attr('action'));
+        var param = {};
+        $html.find('#frmDocumentoEscolherTipo').find('input[type=hidden]').each(function(){
+          var $input = $(this);
+          var name = $input.attr('name');
+          var id = $input.attr('id') || '';
+          if (name && id.indexOf('hdn') !== -1) {
+            param[name] = $input.val();
+          }
+        });
+        param.hdnIdSerie = value;
+        $.ajax({
+          method: 'POST',
+          data: param,
+          url: urlForm
+        }).done(function(htmlDoc){
+          window.saveDuplicateArvore(htmlDoc, nr_sei, paramDoc, openEditor, callback, callback_error);
+        }).fail(function(){
+          if (typeof callback_error === 'function') callback_error();
+          openAlertDuplicateDoc('Erro ao preparar duplicação do documento');
+        });
+      };
+    }
+
+    if (typeof window.ajaxGetDuplicateArvore !== "function") {
+      window.ajaxGetDuplicateArvore = function(urlDoc, nr_sei, paramDoc, openEditor, callback, callback_error) {
+        var url = ensureHttps(urlDoc);
+        $.ajax({ url: url }).done(function(htmlDoc){
+          window.saveDuplicateArvore(htmlDoc, nr_sei, paramDoc, openEditor, callback, callback_error);
+        }).fail(function(){
+          if (typeof callback_error === 'function') callback_error();
+          openAlertDuplicateDoc('Erro ao obter formulário de duplicação do documento');
+        });
+      };
+    }
+
+    if (typeof window.saveDuplicateArvore !== "function") {
+      window.saveDuplicateArvore = function(htmlDoc, nr_sei, paramDoc, openEditor, callback, callback_error) {
+        var $htmlDoc = $(htmlDoc || '');
+        var form = $htmlDoc.find('#frmDocumentoCadastro');
+        if (!form.length) {
+          if (typeof callback_error === 'function') callback_error();
+          openAlertDuplicateDoc('Formulário de duplicação não encontrado');
+          return;
+        }
+        var hrefForm = ensureHttps(form.attr('action'));
+        var param = {};
+        form.find('input[type=hidden]').each(function(){
+          var $input = $(this);
+          var name = $input.attr('name');
+          var id = $input.attr('id') || '';
+          if (name && id.indexOf('hdn') !== -1) {
+            param[name] = $input.val();
+          }
+        });
+        form.find('input[type=text]').each(function(){
+          var $input = $(this);
+          var id = $input.attr('id') || '';
+          if (id.indexOf('txt') !== -1) {
+            param[id] = $input.val();
+          }
+        });
+        form.find('select').each(function(){
+          var $select = $(this);
+          var id = $select.attr('id') || '';
+          if (id.indexOf('sel') !== -1) {
+            param[id] = $select.val();
+          }
+        });
+        form.find('input[type=radio]').each(function(){
+          var $radio = $(this);
+          var name = $radio.attr('name') || '';
+          if (name.indexOf('rdo') !== -1 && $radio.is(':checked')) {
+            param[name] = $radio.val();
+          }
+        });
+        param.selTextoPadrao = '0';
+        param.hdnFlagDocumentoCadastro = '2';
+        param.rdoTextoInicial = 'D';
+        param.selTextoPadrao = null;
+        param.txtProtocoloDocumentoTextoBase = nr_sei;
+        if (paramDoc && typeof paramDoc === 'object') {
+          if (typeof paramDoc.selAssuntos !== 'undefined') param.selAssuntos = paramDoc.selAssuntos;
+          if (typeof paramDoc.hdnAssuntos !== 'undefined') param.hdnAssuntos = paramDoc.hdnAssuntos;
+          if (typeof paramDoc.selInteressados !== 'undefined') param.selInteressados = paramDoc.selInteressados;
+          if (typeof paramDoc.hdnInteressados !== 'undefined') param.hdnInteressados = paramDoc.hdnInteressados;
+          if (typeof paramDoc.txtNumero !== 'undefined' && parentCandidate && typeof parentCandidate.isNumeric === 'function' && !parentCandidate.isNumeric(paramDoc.txtNumero)) {
+            param.txtNumero = paramDoc.txtNumero;
+          }
+          if (typeof paramDoc.txtDescricao !== 'undefined') param.txtDescricao = paramDoc.txtDescricao;
+          if (typeof paramDoc.txaObservacoes !== 'undefined') param.txaObservacoes = paramDoc.txaObservacoes;
+          if (typeof paramDoc.rdoNivelAcesso !== 'undefined') param.rdoNivelAcesso = paramDoc.rdoNivelAcesso;
+          if (typeof paramDoc.selHipoteseLegal !== 'undefined') param.selHipoteseLegal = paramDoc.selHipoteseLegal;
+        }
+
+        var postData = '';
+        for (var k in param) {
+          if (!Object.prototype.hasOwnProperty.call(param, k)) continue;
+          if (postData !== '') postData += '&';
+          var valor = (k === 'hdnAssuntos' || k === 'hdnInteressados') ? (param[k] || '') : window.escapeComponent(param[k]);
+          if (k === 'txtDescricao') {
+            try {
+              var normalizedDescricao = (param[k] || '').normalize('NFC');
+              valor = parentCandidate.encodeURI_toHex ? parentCandidate.encodeURI_toHex(normalizedDescricao) : window.escapeComponent(normalizedDescricao);
+            } catch(e) {
+              valor = window.escapeComponent(param[k]);
+            }
+          }
+          if (k === 'txtNumero') {
+            valor = window.escapeComponent(param[k]);
+          }
+          postData += k + '=' + (typeof valor === 'undefined' ? '' : valor);
+        }
+
+        var xhr = new XMLHttpRequest();
+        $.ajax({
+          method: 'POST',
+          data: postData,
+          url: hrefForm,
+          contentType: 'application/x-www-form-urlencoded; charset=ISO-8859-1',
+          xhr: function(){ return xhr; }
+        }).done(function(htmlResult){
+          var responseUrl = xhr.responseURL || hrefForm;
+          var status = responseUrl && responseUrl.indexOf('controlador.php?acao=arvore_visualizar&acao_origem=documento_gerar') !== -1;
+          var class_icon = '';
+          var text_icon = '';
+          if (status) {
+            class_icon = 'fas fa-check verdeColor';
+            text_icon = 'Documento duplicado com sucesso!';
+            var $htmlResult = $(htmlResult || '');
+            var urlReload = null;
+            var urlEditor = [];
+            var idUser = false;
+            $.each(($htmlResult.text() || '').split('\n'), function(i, v){
+              if (v.indexOf('var linkMontarArvoreProcessoDocumento') !== -1) {
+                urlReload = v.split("'")[1];
+              }
+              if (v.indexOf("atualizarArvore('") !== -1) {
+                urlReload = v.split("'")[1];
+              }
+              if (v.indexOf('acao=editor_montar') !== -1) {
+                urlEditor.push(v.split("'")[1]);
+              }
+              if (v.indexOf('iniciarEditor(') !== -1) {
+                idUser = v.split("'")[1];
+              }
+              if (v.indexOf('janelaEditor_') !== -1) {
+                idUser = v.split('_')[1];
+              }
+            });
+            if (urlEditor.length > 0 && idUser && openEditor) {
+              try {
+                if (parentCandidate && typeof parentCandidate.openWindowEditor === 'function') {
+                  parentCandidate.openWindowEditor(urlEditor[0], idUser);
+                }
+              } catch(e){}
+            }
+            if (openEditor) {
+              if (urlReload) {
+                window.location.href = urlReload;
+              } else {
+                window.location.reload();
+              }
+            }
+            if (typeof callback === 'function') callback();
+          } else {
+            class_icon = 'fas fa-exclamation-circle vermelhoColor';
+            text_icon = 'Erro ao duplicar o documento';
+            if (typeof callback_error === 'function') callback_error();
+          }
+          if (class_icon) {
+            var $container = resolveContainerUploadElement();
+            var $loading = $container.find('.loading-action-doc');
+            if ($loading.length) {
+              $loading
+                .attr('onmouseover', "return infraTooltipMostrar('"+text_icon+"');")
+                .attr('onmouseout', 'return infraTooltipOcultar();')
+                .find('i').attr('class', class_icon);
+            } else if (parentCandidate && typeof parentCandidate.alertaBoxPro === 'function') {
+              parentCandidate.alertaBoxPro(status ? 'Sucesso' : 'Error', status ? 'check-circle' : 'exclamation-triangle', text_icon);
+            } else {
+              window.alert(text_icon);
+            }
+          }
+        }).fail(function(){
+          if (typeof callback_error === 'function') callback_error();
+          openAlertDuplicateDoc('Erro ao duplicar o documento');
+        });
+      };
+    }
+
+    if (typeof window.openAlertDuplicateDoc !== "function") {
+      window.openAlertDuplicateDoc = function(textAlert) {
+        var message = textAlert || 'Erro ao duplicar documento';
+        var $container = resolveContainerUploadElement();
+        var $loading = $container.find('.loading-action-doc');
+        if ($loading.length) {
+          $loading
+            .attr('onmouseover', "return infraTooltipMostrar('"+message+"');")
+            .attr('onmouseout', 'return infraTooltipOcultar();')
+            .find('i').attr('class', 'fas fa-exclamation-circle vermelhoColor');
+        } else if (parentCandidate && typeof parentCandidate.alertaBoxPro === 'function') {
+          parentCandidate.alertaBoxPro('Error', 'exclamation-triangle', message);
+        } else {
+          window.alert(message);
+        }
+      };
+    }
+
     if (typeof window.dropzoneAlertBoxInfo !== "function") {
       window.dropzoneAlertBoxInfo = function() {
         var instance = window.arvoreDropzone || window.dropzoneInstance;
