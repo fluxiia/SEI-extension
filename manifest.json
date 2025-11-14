@@ -31,7 +31,10 @@
       "resources": [
         "sei-extension-features.js",
         "sei-pro-arvore.js",
-        "lib/dropzone.min.js"
+        "lib/dropzone.min.js",
+        "credits.html",
+        "popup.css",
+        "credits-template.js"
       ],
       "matches": ["<all_urls>"]
     }

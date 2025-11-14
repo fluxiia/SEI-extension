@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Créditos • SEI Smart</title>
+    <link rel="stylesheet" href="popup.css" />
+    <style>
+      body.sei-credits-page {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #e9f2ff 0%, #f7f9ff 100%);
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        color: #1a2a4a;
+      }
+      .sei-credits-standalone .sei-credits-card {
+        max-width: 520px;
+        width: 90%;
+      }
+    </style>
+  </head>
+<body class="sei-credits-page">
+  <div id="creditsStandalone" class="sei-credits-standalone"></div>
+  <script src="credits-template.js"></script>
+  <script>
+    (function renderCredits() {
+      function inject() {
+        var container = document.getElementById('creditsStandalone');
+        if (!container || !window.SeiCreditsTemplate) return;
+        window.SeiCreditsTemplate.inject(container, {
+          onClose: function () {
+            try { window.close(); } catch (e) {}
+          }
+        });
+        var closeBtn = container.querySelector('[data-sei-credits-close]');
+        if (closeBtn) {
+          closeBtn.textContent = 'Fechar';
+        }
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', inject, { once: true });
+      } else {
+        inject();
+      }
+    })();
+  </script>
+</body>
+</html>
+

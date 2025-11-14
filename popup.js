@@ -34,7 +34,15 @@ const previewText = document.getElementById("previewText");
 // Elementos do modal de créditos
 const openCreditsButton = document.getElementById("openCreditsButton");
 const creditsModal = document.getElementById("creditsModal");
-const closeCreditsButton = document.getElementById("closeCreditsButton");
+const creditsContainer = document.getElementById("creditsContainer");
+
+function ensurePopupCreditsTemplate() {
+  if (!creditsContainer || creditsContainer.dataset.ready === "true") return;
+  if (window.SeiCreditsTemplate && typeof window.SeiCreditsTemplate.inject === "function") {
+    window.SeiCreditsTemplate.inject(creditsContainer, { onClose: closeCreditsModal });
+    creditsContainer.dataset.ready = "true";
+  }
+}
 
 // Bloqueio por política de uso (disclaimer)
 (async function enforceDisclaimerAcceptance() {
@@ -1836,6 +1844,7 @@ if (modelPreview) {
 
 // Funções para controlar o modal de créditos
 function openCreditsModal() {
+  ensurePopupCreditsTemplate();
   creditsModal.removeAttribute('hidden');
   document.body.style.overflow = 'hidden';
 }
@@ -1845,19 +1854,29 @@ function closeCreditsModal() {
   document.body.style.overflow = '';
 }
 
+if (typeof window !== "undefined") {
+  window.openCreditsHub = function popupOpenCreditsHub() {
+    try {
+      openCreditsModal();
+    } catch (err) {
+      try {
+        const fallbackUrl = "https://github.com/stefanini-sei/SEI-extension#cr%C3%A9ditos";
+        const win = window.open(fallbackUrl, "_blank");
+        if (win) { try { win.opener = null; } catch (e) {} }
+      } catch (e) {}
+    }
+  };
+}
+
 // Event listeners para o modal de créditos
 if (openCreditsButton) {
   openCreditsButton.addEventListener('click', openCreditsModal);
 }
 
-if (closeCreditsButton) {
-  closeCreditsButton.addEventListener('click', closeCreditsModal);
-}
-
 // Fechar modal ao clicar no overlay
 if (creditsModal) {
   creditsModal.addEventListener('click', (event) => {
-    if (event.target === creditsModal) {
+    if (event.target === creditsModal || event.target.classList.contains('sei-credits-overlay')) {
       closeCreditsModal();
     }
   });

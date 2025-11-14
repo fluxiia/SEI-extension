@@ -180,7 +180,10 @@ function createToolsPanel() {
         <div class="sei-tools-panel">
             <div class="tools-header">
                 <h3>🛠️ SEI Tools Avançadas</h3>
-                <button class="close-btn" id="close-tools-panel">×</button>
+                <div class="tools-header-actions">
+                    <button type="button" class="credits-btn" id="open-tools-credits">Créditos</button>
+                    <button class="close-btn" id="close-tools-panel">×</button>
+                </div>
             </div>
             
             <div class="tools-content">
@@ -415,12 +418,35 @@ function addPanelStyles() {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 12px;
         }
 
         .tools-header h3 {
             margin: 0;
             font-size: 16px;
             font-weight: 600;
+        }
+
+        .tools-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .credits-btn {
+            border: none;
+            background: rgba(255,255,255,0.18);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .credits-btn:hover {
+            background: rgba(255,255,255,0.28);
+            transform: translateY(-1px);
         }
 
         .close-btn {
@@ -558,6 +584,27 @@ function addEventListeners() {
         });
         // Evitar iniciar arraste ao clicar no X
         closeBtn.addEventListener('mousedown', (ev) => {
+            try { ev.stopPropagation(); } catch (e) {}
+        });
+    }
+
+    const creditsBtn = document.getElementById('open-tools-credits');
+    if (creditsBtn) {
+        creditsBtn.addEventListener('click', (ev) => {
+            try { ev.stopPropagation(); } catch (e) {}
+            try {
+                if (typeof window.openCreditsHub === "function") {
+                    window.openCreditsHub();
+                    return;
+                }
+            } catch(e){}
+            try {
+                const targetUrl = chrome?.runtime?.getURL ? chrome.runtime.getURL("credits.html") : null;
+                const win = window.open(targetUrl || "https://github.com/stefanini-sei/SEI-extension#cr%C3%A9ditos", "_blank");
+                if (win) { try { win.opener = null; } catch(_err) {} }
+            } catch(err) {}
+        });
+        creditsBtn.addEventListener('mousedown', (ev) => {
             try { ev.stopPropagation(); } catch (e) {}
         });
     }
