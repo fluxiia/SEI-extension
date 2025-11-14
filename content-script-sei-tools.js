@@ -26,6 +26,11 @@ let editor = null;
 let estrategiaUsada = "";
 let CKEDITOR_ref = null;
 
+//declaradas em contentScript.js
+// let ckeElements = null;
+// let iframes = null;
+let topExists = null;
+
 let targetTextarea = null;
 /**
  * Função para verificar se todas as funções estão carregadas
@@ -42,20 +47,23 @@ function areAllFunctionsLoaded() {
  */
 function diagnosticarAmbiente() {
     // Verificar elementos DOM
-    const ckeElements = document.querySelectorAll('.cke, [id*="cke_"]');
-   
-    const scripts = document.querySelectorAll('script[src*="ckeditor"]');
-    const iframes = document.querySelectorAll('iframe');
-
+    ckeElements = document.querySelectorAll('.cke, [id*="cke_"]');
+    iframes = document.querySelectorAll('iframe');
 }
 
 /**
  * Inicializa o botão flutuante no CKEditor
  */
 function initFloatingButton() {
+
     try {
         const topDoc = window.top.document;
-        const topExists = !!topDoc;
+        topExists = !!topDoc;
+
+        if (ckeElements.length === 0) {
+            return;
+        }
+
         if (topExists && topDoc.getElementById(SEI_TOOLS_CONFIG.buttonId)) {
             return;
         }
@@ -134,7 +142,7 @@ function createFloatingButton() {
         bottom: 24px;
         right: 150px;
         z-index: 2147483647;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #4da2ff 0%, #0d6efd 100%);
         color: white;
         border: none;
         border-radius: 999px;
@@ -307,6 +315,11 @@ function createToolsPanel() {
                     </div>
                 </div>
             </div>
+
+            <!-- Overlay de Créditos -->
+            <div class="sei-tools-credits-overlay" id="sei-tools-credits-overlay">
+                <div class="sei-tools-credits-card-wrapper" id="sei-tools-credits-container"></div>
+            </div>
         </div>
     `;
 
@@ -412,7 +425,7 @@ function addPanelStyles() {
         }
 
         .tools-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4da2ff 0%, #0d6efd 100%);
             color: white;
             padding: 16px 20px;
             display: flex;
@@ -492,26 +505,31 @@ function addPanelStyles() {
         }
 
         .tool-btn {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 6px;
+            background: #f6f8ff;
+            border: 2px solid #e0e7ff;
+            border-radius: 10px;
             padding: 8px 12px;
             font-size: 12px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             gap: 6px;
             min-width: auto;
-            color: #495057;
+            color: #0b2b6d;
         }
 
         .tool-btn:hover {
-            background: #667eea;
+            background: #0d6efd;
             color: white;
-            border-color: #667eea;
+            border-color: #0d6efd;
             transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 4px 12px rgba(13,110,253,0.3);
+        }
+
+        .tool-btn:active {
+            transform: scale(0.98) translateY(0);
         }
 
         .tool-btn.sigilo-btn:hover {
@@ -539,7 +557,7 @@ function addPanelStyles() {
             display: block;
             font-size: 18px;
             font-weight: bold;
-            color: #667eea;
+            color: #0d6efd;
         }
 
         .stat-label {
@@ -567,6 +585,156 @@ function addPanelStyles() {
         .tools-content::-webkit-scrollbar-thumb:hover {
             background: #a8a8a8;
         }
+
+        /* Estilos para modal de créditos embutido */
+        .sei-tools-credits-overlay {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(13,30,64,.72);
+            backdrop-filter: blur(4px);
+            padding: 24px;
+            z-index: 10;
+            border-radius: 16px;
+        }
+
+        .sei-tools-credits-overlay.sei-credits-open {
+            display: flex;
+        }
+
+        .sei-tools-credits-card-wrapper {
+            max-width: 460px;
+            width: 100%;
+        }
+
+        .sei-tools-panel .sei-credits-card {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 26px 28px;
+            box-shadow: 0 22px 44px rgba(15,29,61,.28);
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .sei-tools-panel .sei-credits-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .sei-tools-panel .sei-credits-header h3 {
+            margin: 0;
+            font-size: 20px;
+            color: #0f1d3d;
+            font-weight: 700;
+        }
+
+        .sei-tools-panel .sei-credits-close {
+            border: none;
+            background: #0d6efd;
+            color: #fff;
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .sei-tools-panel .sei-credits-close:hover {
+            filter: brightness(1.1);
+        }
+
+        .sei-tools-panel .sei-credits-body {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            color: #1c2c4d;
+            font-size: 14px;
+        }
+
+        .sei-tools-panel .sei-credits-developer {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .sei-tools-panel .sei-credits-avatar {
+            width: 54px;
+            height: 54px;
+            border-radius: 18px;
+            background: #0d6efd;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .sei-tools-panel .sei-credits-info {
+            flex: 1;
+        }
+
+        .sei-tools-panel .sei-credits-name {
+            margin: 0;
+            font-size: 16px;
+            color: #0f1d3d;
+            font-weight: 600;
+        }
+
+        .sei-tools-panel .sei-credits-role {
+            margin: 4px 0 10px;
+            color: #4a5978;
+            font-size: 13px;
+        }
+
+        .sei-tools-panel .sei-credits-contact {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #0d6efd;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .sei-tools-panel .sei-credits-contact:hover {
+            text-decoration: underline;
+        }
+
+        .sei-tools-panel .sei-credits-features {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sei-tools-panel .sei-credits-feature {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            color: #364468;
+            font-size: 13px;
+        }
+
+        .sei-tools-panel .sei-credits-footer {
+            text-align: center;
+            font-size: 12px;
+            color: #4a5978;
+        }
+
+        .sei-tools-panel .sei-credits-version {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .sei-tools-panel .sei-credits-copy {
+            display: block;
+        }
     `;
     document.head.appendChild(style);
 }
@@ -592,17 +760,7 @@ function addEventListeners() {
     if (creditsBtn) {
         creditsBtn.addEventListener('click', (ev) => {
             try { ev.stopPropagation(); } catch (e) {}
-            try {
-                if (typeof window.openCreditsHub === "function") {
-                    window.openCreditsHub();
-                    return;
-                }
-            } catch(e){}
-            try {
-                const targetUrl = chrome?.runtime?.getURL ? chrome.runtime.getURL("credits.html") : null;
-                const win = window.open(targetUrl || "https://github.com/stefanini-sei/SEI-extension#cr%C3%A9ditos", "_blank");
-                if (win) { try { win.opener = null; } catch(_err) {} }
-            } catch(err) {}
+            openToolsCreditsModal();
         });
         creditsBtn.addEventListener('mousedown', (ev) => {
             try { ev.stopPropagation(); } catch (e) {}
@@ -693,6 +851,183 @@ function toggleToolsPanel() {
     } else {
         openToolsPanel();
     }
+}
+
+/**
+ * Abre o modal de créditos embutido no painel
+ */
+async function openToolsCreditsModal() {
+    const overlay = document.getElementById('sei-tools-credits-overlay');
+    const container = document.getElementById('sei-tools-credits-container');
+    
+    if (!overlay || !container) {
+        console.warn('[SEI Tools] Elementos do modal de créditos não encontrados');
+        return;
+    }
+
+    // Verificar se o template já está disponível
+    if (window.SeiCreditsTemplate && window.SeiCreditsTemplate.inject) {
+        console.log('[SEI Tools] Template já carregado, renderizando...');
+        renderCreditsInModal(overlay, container);
+        return;
+    }
+
+    // Carregar o template de créditos
+    console.log('[SEI Tools] Carregando template de créditos...');
+    
+    try {
+        // Tentar obter a URL do script
+        let scriptUrl = null;
+        
+        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {
+            scriptUrl = chrome.runtime.getURL('credits-template.js');
+        }
+        
+        if (!scriptUrl) {
+            console.warn('[SEI Tools] chrome.runtime.getURL não disponível, usando renderização inline');
+            renderCreditsInline(overlay, container);
+            return;
+        }
+
+        // Carregar script dinamicamente
+        await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = scriptUrl;
+            script.onload = () => {
+                console.log('[SEI Tools] ✅ Template de créditos carregado com sucesso');
+                resolve();
+            };
+            script.onerror = (error) => {
+                console.error('[SEI Tools] ❌ Erro ao carregar template:', error);
+                reject(error);
+            };
+            document.head.appendChild(script);
+        });
+
+        // Aguardar um pouco para garantir que o script foi executado
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Verificar se o template está disponível agora
+        if (window.SeiCreditsTemplate && window.SeiCreditsTemplate.inject) {
+            renderCreditsInModal(overlay, container);
+        } else {
+            console.warn('[SEI Tools] Template não disponível após carregamento, usando renderização inline');
+            renderCreditsInline(overlay, container);
+        }
+
+    } catch (error) {
+        console.error('[SEI Tools] Erro ao carregar template:', error);
+        renderCreditsInline(overlay, container);
+    }
+}
+
+/**
+ * Renderiza o conteúdo de créditos no modal
+ */
+function renderCreditsInModal(overlay, container) {
+    if (!window.SeiCreditsTemplate || !window.SeiCreditsTemplate.inject) {
+        console.error('[SEI Tools] Template de créditos não disponível');
+        return;
+    }
+
+    // Limpar container e injetar template
+    container.innerHTML = '';
+    window.SeiCreditsTemplate.inject(container, {
+        onClose: closeToolsCreditsModal
+    });
+
+    // Adicionar event listener para fechar ao clicar no overlay
+    overlay.addEventListener('click', (ev) => {
+        if (ev.target === overlay) {
+            closeToolsCreditsModal();
+        }
+    });
+
+    // Mostrar overlay
+    overlay.classList.add('sei-credits-open');
+}
+
+/**
+ * Fecha o modal de créditos
+ */
+function closeToolsCreditsModal() {
+    const overlay = document.getElementById('sei-tools-credits-overlay');
+    if (overlay) {
+        overlay.classList.remove('sei-credits-open');
+    }
+}
+
+/**
+ * Renderiza os créditos inline (fallback quando o template não carrega)
+ */
+function renderCreditsInline(overlay, container) {
+    console.log('[SEI Tools] Renderizando créditos inline (fallback)');
+    
+    // HTML inline dos créditos
+    const creditsHTML = `
+        <div class="sei-credits-card">
+            <div class="sei-credits-header">
+                <h3>🎉 Créditos - SEI Smart</h3>
+                <button type="button" class="sei-credits-close" onclick="document.getElementById('sei-tools-credits-overlay').classList.remove('sei-credits-open')">Fechar</button>
+            </div>
+            <div class="sei-credits-body">
+                <div class="sei-credits-developer">
+                    <div class="sei-credits-avatar">SF</div>
+                    <div class="sei-credits-info">
+                        <h4 class="sei-credits-name">Steferson Ferreira</h4>
+                        <p class="sei-credits-role">Desenvolvedor & Criador</p>
+                        <a class="sei-credits-contact" href="mailto:steferson.ferreira@gmail.com" target="_blank" rel="noopener">
+                            <span>✉️</span>
+                            <span>steferson.ferreira@gmail.com</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="sei-credits-features">
+                    <div class="sei-credits-feature">
+                        <span>🤖</span>
+                        <span>Geração automática de despachos com IA</span>
+                    </div>
+                    <div class="sei-credits-feature">
+                        <span>📄</span>
+                        <span>Modelos personalizados de documentos</span>
+                    </div>
+                    <div class="sei-credits-feature">
+                        <span>🛠️</span>
+                        <span>Ferramentas avançadas de formatação</span>
+                    </div>
+                    <div class="sei-credits-feature">
+                        <span>📤</span>
+                        <span>Upload inteligente de arquivos</span>
+                    </div>
+                    <div class="sei-credits-feature">
+                        <span>📸</span>
+                        <span>Captura automática de texto</span>
+                    </div>
+                    <div class="sei-credits-feature">
+                        <span>⚡</span>
+                        <span>Interface otimizada e intuitiva</span>
+                    </div>
+                </div>
+                <div class="sei-credits-footer">
+                    <span class="sei-credits-version">Versão 1.0.0</span>
+                    <span class="sei-credits-copy">© 2025 SEI Smart. Todos os direitos reservados.</span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Limpar e inserir HTML
+    container.innerHTML = creditsHTML;
+    
+    // Mostrar overlay
+    overlay.classList.add('sei-credits-open');
+    
+    // Adicionar event listener para fechar ao clicar no overlay
+    overlay.addEventListener('click', (ev) => {
+        if (ev.target === overlay) {
+            closeToolsCreditsModal();
+        }
+    }, { once: true });
 }
 
 /**
@@ -1766,6 +2101,7 @@ setTimeout(tryInit, 2000);
 
 // Tentar após 5 segundos (fallback)
 setTimeout(tryInit, 5000);
+
 
 function injectSeiProArvoreScript() {
     try {

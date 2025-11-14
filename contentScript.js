@@ -1,8 +1,16 @@
 const BUTTON_ID = "sei-despacho-ia-floating-button";
 const DEFAULT_SETTINGS = { floatingButtonEnabled: true, disclaimerAccepted: false };
+let ckeElements = null;
+let iframes = null;
 
 if (window.top === window.self) {
   let shouldShowButton = false;
+
+  function diagnosticarAmbiente() {
+    // Verificar elementos DOM
+    ckeElements = document.querySelectorAll('.cke, [id*="cke_"]');
+    iframes = document.querySelectorAll('iframe');
+  }
 
   const removeButton = () => {
     const button = document.getElementById(BUTTON_ID);
@@ -11,7 +19,13 @@ if (window.top === window.self) {
     }
   };
 
+
   const ensureButton = () => {
+    diagnosticarAmbiente()
+    if (ckeElements.length === 0) {
+      return;
+    }
+
     if (!shouldShowButton || document.getElementById(BUTTON_ID)) {
       return;
     }
@@ -76,4 +90,5 @@ if (window.top === window.self) {
       applySetting(enabled);
     });
   });
+
 }

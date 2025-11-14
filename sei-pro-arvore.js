@@ -158,6 +158,9 @@
   var MANUAL_UPLOAD_TRIGGER_FLAG = "__seiProManualTrigger";
   var SAVE_HISTORY_LIMIT = 5;
 
+  // let ckeElements = null;
+  let iframes = null;
+
   // ========================================
   // FUNÇÕES AUXILIARES (devem ser definidas antes do UploadFlowManager)
   // ========================================
@@ -1972,7 +1975,11 @@
     if (window.parent && window.parent !== window) {
       try { enqueue(window.parent.document); } catch(e) {}
     }
+    if (window.top && window.top !== window && window.top !== window.parent) {
+      try { enqueue(window.top.document); } catch(e) {}
+    }
 
+    // Método 1: Buscar em scripts e DOM
     for (var i = 0; i < docsToCheck.length; i++) {
       var links = extractLinksArvoreFromScripts(docsToCheck[i]);
       if (links && links.length) {
@@ -1980,7 +1987,46 @@
         return;
       }
     }
-    console.warn('[SEIPro] Não foi possível localizar o link "Incluir Documento" nos scripts da árvore.');
+    
+    // Método 2: Tentar usar getUrlAcaoPro se disponível
+    try {
+      var parentCandidate = window.parent && window.parent.parent ? window.parent.parent : window.parent || window;
+      if (typeof parentCandidate.getUrlAcaoPro === 'function') {
+        var url = parentCandidate.getUrlAcaoPro('documento_escolher_tipo');
+        if (url) {
+          pushUniqueLink('Incluir Documento', url);
+          return;
+        }
+        // Tentar documento_receber como alternativa
+        url = parentCandidate.getUrlAcaoPro('documento_receber');
+        if (url) {
+          pushUniqueLink('Incluir Documento', url);
+          return;
+        }
+      }
+    } catch(e) {
+      console.debug('[SEIPro] Erro ao usar getUrlAcaoPro:', e);
+    }
+    
+    // Método 3: Construir URL baseada na URL atual
+    try {
+      var currentUrl = window.location.href || document.location.href;
+      if (currentUrl && currentUrl.indexOf('/sei/') !== -1) {
+        var baseUrl = currentUrl.split('/sei/')[0] + '/sei/';
+        var procIdMatch = currentUrl.match(/[?&]id_procedimento=(\d+)/);
+        var procId = procIdMatch ? procIdMatch[1] : null;
+        
+        if (procId) {
+          var constructedUrl = baseUrl + 'controlador.php?acao=documento_escolher_tipo&acao_origem=arvore_visualizar&acao_retorno=arvore_visualizar&id_procedimento=' + procId + '&arvore=1';
+          pushUniqueLink('Incluir Documento', constructedUrl);
+          return;
+        }
+      }
+    } catch(e) {
+      console.debug('[SEIPro] Erro ao construir URL:', e);
+    }
+    
+    console.warn('[SEIPro] Não foi possível localizar o link "Incluir Documento" nos scripts da árvore. O upload pode não funcionar corretamente.');
   }
 
     if (!window.arvoreDropzone && window.dropzoneInstance) {
@@ -2679,7 +2725,25 @@
     (document.head || document.documentElement).appendChild(style);
   }
 
+
+  /**
+   * Função de diagnóstico para mostrar informações sobre o ambiente
+   */
+  function diagnosticarAmbiente() {
+    // Verificar elementos DOM
+    // Declarar variáveis localmente para evitar erros de referência
+    var ckeElements = document.querySelectorAll('.cke, [id*="cke_"]');
+    var iframes = document.querySelectorAll('iframe');
+    // Nota: essas variáveis são apenas para diagnóstico, não são usadas atualmente
+  }
+
   function ensureFallbackModal() {
+
+    diagnosticarAmbiente()
+    // if (ckeElements.length === 0) {
+    //   return;
+    // }
+
     injectFallbackStyles();
     var modal = document.getElementById(FALLBACK_MODAL_ID);
     if (modal) return modal;
@@ -2875,13 +2939,52 @@
   }
 
   function openFallbackModal() {
-    var modal = ensureFallbackModal();
-    if (!modal) return;
-    var dz = ensureFallbackDropzone();
-    modal.classList.add("sei-pro-open");
-    modal.style.display = "flex";
-    if (dz && dz.hiddenFileInput) {
-      try { dz.hiddenFileInput.click(); } catch(e){}
+    try {
+      console.log('[SEIPro] openFallbackModal: Iniciando...');
+      var modal = ensureFallbackModal();
+      if (!modal) {
+        console.error('[SEIPro] openFallbackModal: Modal não foi criado');
+        return;
+      }
+      
+      console.log('[SEIPro] openFallbackModal: Modal encontrado, abrindo...');
+      
+      // Garantir que estilos estão aplicados
+      modal.classList.add("sei-pro-open");
+      modal.style.display = "flex";
+      modal.style.visibility = "visible";
+      modal.style.opacity = "1";
+      modal.style.zIndex = "2147483645";
+      
+      // Garantir que modal está no body
+      if (!document.body.contains(modal)) {
+        (document.body || document.documentElement).appendChild(modal);
+      }
+      
+      // Inicializar Dropzone se necessário
+      var dz = ensureFallbackDropzone();
+      if (dz) {
+        console.log('[SEIPro] openFallbackModal: Dropzone inicializado');
+        // Não tentar abrir file input automaticamente - deixar usuário clicar
+      } else {
+        console.warn('[SEIPro] openFallbackModal: Dropzone não inicializado (continuando)');
+      }
+      
+      console.log('[SEIPro] openFallbackModal: Modal aberto com sucesso');
+      
+      // Verificar se modal está realmente visível
+      setTimeout(function() {
+        var isVisible = modal.offsetParent !== null || modal.style.display === "flex";
+        if (!isVisible) {
+          console.warn('[SEIPro] openFallbackModal: Modal não está visível, forçando...');
+          modal.style.display = "flex";
+          modal.style.visibility = "visible";
+          modal.style.opacity = "1";
+        }
+      }, 100);
+      
+    } catch(err) {
+      console.error('[SEIPro] openFallbackModal: Erro ao abrir modal:', err);
     }
   }
 
@@ -2896,6 +2999,16 @@
   }
 
   function openCreditsHub() {
+    // Tentar abrir o overlay no modal de upload se existir
+    var uploadModal = document.getElementById(FALLBACK_MODAL_ID);
+    if (uploadModal) {
+      return openCreditsOverlay(uploadModal).catch(function(err){
+        console.warn('[SEIPro] Erro ao abrir overlay, usando fallback inline:', err);
+        renderCreditsInlineFallback(uploadModal);
+      });
+    }
+    
+    // Fallback: tentar abrir em nova janela
     return openCreditsOverlay().catch(function(){
       var fallbackUrl = resolveExtensionUrl('credits.html');
       try {
@@ -3061,56 +3174,317 @@
     setTimeout(function(){ harmonizeFloatingButtons(doc); }, 500);
   }
 
+  /**
+   * Verifica se há link "Incluir Documento" disponível
+   */
+  function hasIncluirDocumentoLink() {
+    // Primeiro, tentar garantir que os links foram buscados (se a função estiver disponível)
+    try {
+      // Verificar se a função existe antes de chamar
+      if (typeof ensureLinksArvore === 'function') {
+        ensureLinksArvore();
+      }
+      // Se não existe, continuar com outras verificações (não é crítico)
+    } catch(e) {
+      // Ignorar erro silenciosamente - continuar com outras verificações
+    }
+    
+    // Verificar se há link válido no array
+    if (Array.isArray(window.arrayLinksArvore) && window.arrayLinksArvore.length) {
+      for (var i = 0; i < window.arrayLinksArvore.length; i++) {
+        if (window.arrayLinksArvore[i] && window.arrayLinksArvore[i].name === 'Incluir Documento' && window.arrayLinksArvore[i].url) {
+          return true;
+        }
+      }
+    }
+    
+    // Verificar se há função getUrlAcaoPro disponível
+    try {
+      var parentCandidate = window.parent && window.parent.parent ? window.parent.parent : window.parent || window;
+      if (typeof parentCandidate.getUrlAcaoPro === 'function') {
+        var url = parentCandidate.getUrlAcaoPro('documento_escolher_tipo') || parentCandidate.getUrlAcaoPro('documento_receber');
+        if (url) return true;
+      }
+    } catch(e) {
+      // Ignorar erro
+    }
+    
+    // Verificar se há link no DOM
+    try {
+      var links = document.querySelectorAll('a[href*="documento_escolher_tipo"], a[href*="documento_receber"]');
+      if (links && links.length > 0) {
+        for (var j = 0; j < links.length; j++) {
+          var href = links[j].getAttribute('href');
+          if (href && href.indexOf('controlador.php') !== -1) {
+            return true;
+          }
+        }
+      }
+    } catch(e) {
+      // Ignorar erro
+    }
+    
+    // Verificar se há id_procedimento na URL atual (pode construir link)
+    try {
+      var currentUrl = window.location.href || document.location.href;
+      if (currentUrl && currentUrl.indexOf('/sei/') !== -1) {
+        var procIdMatch = currentUrl.match(/[?&]id_procedimento=(\d+)/);
+        if (procIdMatch && procIdMatch[1]) {
+          return true; // Pode construir URL
+        }
+      }
+    } catch(e) {
+      // Ignorar erro
+    }
+    
+    return false;
+  }
+
   function createOrUpdateButton() {
     var doc = document;
     injectButtonStylesIfNeeded();
+    
+    // Verificar se há link disponível antes de criar/mostrar botão
+    var hasLink = hasIncluirDocumentoLink();
+    
     var btn = doc.getElementById(UPLOAD_BUTTON_ID);
     var container = ensureFloatingContainer(doc);
+    
     if (!btn) {
+      // Só criar botão se houver link disponível
+      if (!hasLink) {
+        return null;
+      }
+      
       btn = doc.createElement("button");
       btn.id = UPLOAD_BUTTON_ID;
       btn.type = "button";
       btn.title = "Enviar arquivos externos";
       btn.setAttribute("aria-label", "Enviar arquivos externos");
-      btn.addEventListener("click", onClickUpload, { once: false });
+      
+      // Registrar evento de clique de forma mais robusta
+      btn.onclick = function(e) {
+        try {
+          if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        } catch(err) {}
+        onClickUpload(e);
+      };
+      
+      // Marcar como tendo listener
+      btn.setAttribute('data-sei-pro-listener', 'true');
+      
+      // Adicionar também addEventListener como backup
+      try {
+        btn.addEventListener("click", function(e) {
+          try {
+            if (e) {
+              e.preventDefault();
+              e.stopPropagation();
+            }
+          } catch(err) {}
+          onClickUpload(e);
+        }, { capture: false, once: false });
+      } catch(e) {
+        console.warn('[SEIPro] Erro ao adicionar event listener:', e);
+      }
+      
       container.appendChild(btn);
     } else if (!container.contains(btn)) {
       container.appendChild(btn);
     }
-    btn.classList.add("sei-pro-floating-round");
-    btn.style.display = "";
-    btn.hidden = false;
-    ensureButtonIcon(btn);
+    
+    // Garantir que botão existente tenha o listener registrado
+    if (btn) {
+      // Verificar se já tem listener - se não tiver, adicionar
+      var hasOnclick = btn.onclick !== null && btn.onclick !== undefined;
+      var hasAttr = btn.getAttribute('data-sei-pro-listener') === 'true';
+      
+      if (!hasOnclick || !hasAttr) {
+        // Registrar evento de clique de forma robusta
+        btn.onclick = function(e) {
+          try {
+            if (e) {
+              e.preventDefault();
+              e.stopPropagation();
+            }
+          } catch(err) {}
+          onClickUpload(e);
+        };
+        
+        // Marcar como tendo listener
+        btn.setAttribute('data-sei-pro-listener', 'true');
+        
+        // Adicionar também addEventListener como backup
+        try {
+          btn.addEventListener("click", function(e) {
+            try {
+              if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+              }
+            } catch(err) {}
+            onClickUpload(e);
+          }, { capture: false, once: false });
+        } catch(e) {
+          console.warn('[SEIPro] Erro ao adicionar event listener:', e);
+        }
+      }
+    }
+    
+    // Mostrar/ocultar botão baseado na disponibilidade do link
+    if (hasLink && btn) {
+      btn.classList.add("sei-pro-floating-round");
+      btn.style.display = "";
+      btn.hidden = false;
+      ensureButtonIcon(btn);
+    } else if (btn) {
+      btn.style.display = "none";
+      btn.hidden = true;
+    }
+    
     scheduleHarmonize(doc);
     return btn;
   }
 
   async function onClickUpload(e){
-    if (e && typeof e.preventDefault === "function") e.preventDefault();
-    window[MANUAL_UPLOAD_TRIGGER_FLAG] = true;
-    try { await ensureDropzoneScript(); } catch(err) { window[MANUAL_UPLOAD_TRIGGER_FLAG] = false; return; }
-    var ok = idempotentInit();
-    if (!ok) return;
-    try { registerLegacyUploadFunctions(); } catch(e){}
-    var usedNative = false;
     try {
-      if (typeof window.openModalDropzone === "function") {
-        window.openModalDropzone();
-        usedNative = true;
+      if (e && typeof e.preventDefault === "function") {
+        e.preventDefault();
       }
-    } catch(e){}
-    try {
-      if (typeof window.sendUploadArvore === "function") {
-        var fn = window.sendUploadArvore;
-        window.sendUploadArvore("upload");
-        if (!fn.__seiProArvorePolyfill) {
-          usedNative = true;
+      if (e && typeof e.stopPropagation === "function") {
+        e.stopPropagation();
+      }
+    } catch(err) {}
+    
+    console.log('[SEIPro] ========================================');
+    console.log('[SEIPro] Botão de upload clicado - INICIANDO');
+    console.log('[SEIPro] ========================================');
+    
+    // Garantir que o modal será aberto - sempre usar fallback como método principal
+    var modalOpened = false;
+    
+    // Função para abrir modal de forma garantida
+    var forceOpenModal = function() {
+      if (modalOpened) return;
+      try {
+        console.log('[SEIPro] Forçando abertura do modal de fallback...');
+        var modal = ensureFallbackModal();
+        if (modal) {
+          modal.classList.add("sei-pro-open");
+          modal.style.display = "flex";
+          modal.style.visibility = "visible";
+          modal.style.opacity = "1";
+          modalOpened = true;
+          console.log('[SEIPro] ✓ Modal aberto com sucesso');
+          
+          // Tentar inicializar dropzone se ainda não foi
+          setTimeout(function() {
+            try {
+              ensureFallbackDropzone();
+            } catch(e) {
+              console.warn('[SEIPro] Erro ao inicializar dropzone:', e);
+            }
+          }, 100);
+        } else {
+          console.error('[SEIPro] ✗ Não foi possível criar modal');
         }
+      } catch(err) {
+        console.error('[SEIPro] ✗ Erro ao abrir modal:', err);
       }
-    } catch(e){}
-    if (!usedNative) {
-      try { openFallbackModal(); } catch(e){}
+    };
+    
+    // Verificar se há link disponível
+    var hasLink = false;
+    try {
+      hasLink = hasIncluirDocumentoLink();
+    } catch(e) {
+      console.warn('[SEIPro] Erro ao verificar link:', e);
     }
+    
+    console.log('[SEIPro] Link disponível?', hasLink);
+    
+    window[MANUAL_UPLOAD_TRIGGER_FLAG] = true;
+    
+    // Tentar carregar Dropzone, mas não bloquear se falhar
+    try {
+      await ensureDropzoneScript();
+      console.log('[SEIPro] ✓ Dropzone carregado');
+    } catch(err) { 
+      console.warn('[SEIPro] ⚠ Erro ao carregar Dropzone (continuando):', err);
+    }
+    
+    // Tentar inicializar funções legadas, mas não bloquear
+    try {
+      registerLegacyUploadFunctions();
+      console.log('[SEIPro] ✓ Funções legadas registradas');
+    } catch(e) {
+      console.warn('[SEIPro] ⚠ Erro ao registrar funções legadas:', e);
+    }
+    
+    // Tentar idempotentInit, mas não bloquear
+    try {
+      idempotentInit();
+      console.log('[SEIPro] ✓ Inicialização idempotente concluída');
+    } catch(e) {
+      console.warn('[SEIPro] ⚠ Erro na inicialização idempotente:', e);
+    }
+    
+    // Se tem link, tentar métodos nativos primeiro
+    if (hasLink) {
+      // Tentar abrir modal nativo do SEI
+      try {
+        if (typeof window.openModalDropzone === "function") {
+          console.log('[SEIPro] Tentando abrir modal nativo do SEI...');
+          window.openModalDropzone();
+          modalOpened = true;
+          console.log('[SEIPro] ✓ Modal nativo aberto');
+          return;
+        }
+      } catch(e) {
+        console.warn('[SEIPro] ⚠ Erro ao abrir modal nativo:', e);
+      }
+      
+      // Tentar usar sendUploadArvore (se disponível)
+      try {
+        if (typeof window.sendUploadArvore === "function") {
+          console.log('[SEIPro] Tentando iniciar upload via sendUploadArvore...');
+          window.sendUploadArvore("upload");
+          
+          // Verificar se modal foi aberto após um tempo
+          setTimeout(function() {
+            var modal = document.getElementById(FALLBACK_MODAL_ID);
+            if (!modal || !modal.classList.contains('sei-pro-open')) {
+              console.log('[SEIPro] Modal não foi aberto, abrindo fallback');
+              forceOpenModal();
+            } else {
+              console.log('[SEIPro] ✓ Modal já estava aberto');
+              modalOpened = true;
+            }
+          }, 500);
+          
+          // Se não for polyfill, considerar sucesso
+          var fn = window.sendUploadArvore;
+          if (fn && !fn.__seiProArvorePolyfill) {
+            return;
+          }
+        }
+      } catch(e) {
+        console.warn('[SEIPro] ⚠ Erro ao chamar sendUploadArvore:', e);
+      }
+    }
+    
+    // Garantir que o modal seja aberto (método principal)
+    if (!modalOpened) {
+      console.log('[SEIPro] Abrindo modal de fallback...');
+      forceOpenModal();
+    }
+    
+    console.log('[SEIPro] ========================================');
+    console.log('[SEIPro] Processamento do clique concluído');
+    console.log('[SEIPro] ========================================');
   }
 
   function ensureUploadButton() {
@@ -3119,24 +3493,94 @@
 
     function attempt() {
       if (document.body || document.documentElement) {
-        createOrUpdateButton(); return true;
+        createOrUpdateButton(); 
+        return true;
       }
       return false;
     }
+    
+    // Função para atualizar visibilidade do botão quando o link aparecer/desaparecer
+    function updateButtonVisibility() {
+      var hasLink = hasIncluirDocumentoLink();
+      var btn = document.getElementById(UPLOAD_BUTTON_ID);
+      
+      if (hasLink) {
+        // Se há link e botão não existe, criar
+        if (!btn) {
+          createOrUpdateButton();
+        } else {
+          // Se há link e botão existe, mostrar
+          btn.style.display = "";
+          btn.hidden = false;
+        }
+      } else {
+        // Se não há link e botão existe, ocultar
+        if (btn) {
+          btn.style.display = "none";
+          btn.hidden = true;
+        }
+      }
+    }
 
+    // Tentar criar botão imediatamente
     if (!attempt()) {
       var t0 = Date.now();
       var timer = setInterval(function(){
-        if (attempt() || (Date.now()-t0) > 10000) clearInterval(timer);
+        if (attempt() || (Date.now()-t0) > 10000) {
+          clearInterval(timer);
+          // Após criar, verificar periodicamente a disponibilidade do link
+          if (document.getElementById(UPLOAD_BUTTON_ID)) {
+            // Verificar a cada 2 segundos se o link apareceu/desapareceu
+            setInterval(updateButtonVisibility, 2000);
+          }
+        }
       }, 120);
+      
       try {
         var mo = new MutationObserver(function(){
-          if (attempt()) { try { mo.disconnect(); } catch(e){} }
+          if (attempt()) { 
+            try { 
+              mo.disconnect(); 
+              // Após criar botão, começar a monitorar mudanças no DOM para atualizar visibilidade
+              if (document.getElementById(UPLOAD_BUTTON_ID)) {
+                // Verificar periodicamente
+                setInterval(updateButtonVisibility, 2000);
+              }
+            } catch(e){} 
+          } else {
+            // Se o botão já existe, apenas atualizar visibilidade
+            updateButtonVisibility();
+          }
         });
         mo.observe(document.documentElement || document, { childList: true, subtree: true });
       } catch(e){}
+      
       if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", attempt, { once: true });
+        document.addEventListener("DOMContentLoaded", function(){
+          attempt();
+          // Após DOM carregado, verificar periodicamente
+          if (document.getElementById(UPLOAD_BUTTON_ID)) {
+            setInterval(updateButtonVisibility, 2000);
+          }
+        }, { once: true });
+      }
+    } else {
+      // Se já criou o botão, começar a monitorar mudanças
+      if (document.getElementById(UPLOAD_BUTTON_ID)) {
+        // Verificar periodicamente se o link apareceu/desapareceu
+        setInterval(updateButtonVisibility, 2000);
+        
+        // Também monitorar mudanças no DOM que podem indicar nova carga de links
+        try {
+          var visibilityObserver = new MutationObserver(function(){
+            updateButtonVisibility();
+          });
+          visibilityObserver.observe(document.body || document.documentElement, { 
+            childList: true, 
+            subtree: true,
+            attributes: false
+          });
+        } catch(e) {}
       }
     }
   }
@@ -3144,26 +3588,84 @@
   function extractLinksArvoreFromScripts(doc){
     var results = [];
     if (!doc) return results;
+    
     try {
+      // Método 1: Buscar em scripts inline
       var scripts = doc.querySelectorAll('script');
       for (var i = 0; i < scripts.length; i++) {
         var script = scripts[i];
         if (script.getAttribute && script.getAttribute('src')) continue;
-        var text = script.textContent || '';
-        if (text.indexOf('Nos[0].acoes') === -1) continue;
-        var regex = /controlador\.php\?[^"'\s]*acao=documento_escolher_tipo[^"'\s]*/gi;
-        var match;
-        while ((match = regex.exec(text))) {
-          var url = match[0];
-          if (!url) continue;
-          url = url.replace(/&amp;/g, '&');
-          results.push(url);
+        var text = script.textContent || script.innerHTML || '';
+        
+        // Padrão original
+        if (text.indexOf('Nos[0].acoes') !== -1 || text.indexOf('documento_escolher_tipo') !== -1) {
+          var regex = /controlador\.php\?[^"'\s]*acao=documento_escolher_tipo[^"'\s]*/gi;
+          var match;
+          while ((match = regex.exec(text))) {
+            var url = match[0];
+            if (!url) continue;
+            url = url.replace(/&amp;/g, '&');
+            if (results.indexOf(url) === -1) results.push(url);
+          }
         }
-        if (results.length) break;
+        
+        // Padrões alternativos
+        var altPatterns = [
+          /controlador\.php\?[^"'\s]*acao=documento_receber[^"'\s]*/gi,
+          /['"]([^'"]*controlador\.php[^'"]*acao=documento_escolher_tipo[^'"]*)['"]/gi,
+          /['"]([^'"]*controlador\.php[^'"]*acao=documento_receber[^'"]*)['"]/gi
+        ];
+        
+        for (var p = 0; p < altPatterns.length; p++) {
+          var pattern = altPatterns[p];
+          var match;
+          while ((match = pattern.exec(text))) {
+            var url = match[1] || match[0];
+            if (!url) continue;
+            url = url.replace(/&amp;/g, '&');
+            if (url.indexOf('controlador.php') !== -1 && results.indexOf(url) === -1) {
+              results.push(url);
+            }
+          }
+        }
       }
+      
+      // Método 2: Buscar em links do DOM
+      try {
+        var links = doc.querySelectorAll('a[href*="documento_escolher_tipo"], a[href*="documento_receber"]');
+        for (var j = 0; j < links.length; j++) {
+          var href = links[j].getAttribute('href');
+          if (href && href.indexOf('controlador.php') !== -1) {
+            href = normalizeLink(href);
+            if (results.indexOf(href) === -1) results.push(href);
+          }
+        }
+      } catch(e){}
+      
+      // Método 3: Buscar em atributos onclick, data-*, etc
+      try {
+        var elementsWithActions = doc.querySelectorAll('[onclick*="documento_escolher_tipo"], [onclick*="documento_receber"], [data-url*="documento"]');
+        for (var k = 0; k < elementsWithActions.length; k++) {
+          var el = elementsWithActions[k];
+          var onclick = el.getAttribute('onclick') || '';
+          var dataUrl = el.getAttribute('data-url') || '';
+          var text = onclick + ' ' + dataUrl;
+          
+          var regex = /controlador\.php\?[^"'\s)]*acao=documento_(escolher_tipo|receber)[^"'\s)]*/gi;
+          var match;
+          while ((match = regex.exec(text))) {
+            var url = match[0];
+            if (!url) continue;
+            url = url.replace(/&amp;/g, '&');
+            if (results.indexOf(url) === -1) results.push(url);
+          }
+        }
+      } catch(e){}
+      
     } catch(e){
       console.debug('[SEIPro] Falha ao extrair scripts da árvore', e);
     }
+    
     return results;
   }
 
@@ -3257,8 +3759,18 @@
     } catch(e){}
     try {
       dz.on('error', function(file, errorMessage){
-        console.warn('[SEIPro] Dropzone erro', file && file.name, errorMessage);
+        console.warn('[SEIPro] ❌ Erro no upload:', file && file.name, errorMessage);
         window[MANUAL_UPLOAD_TRIGGER_FLAG] = false;
+        // Atualizar status visual para erro
+        try {
+          if (file && file.previewElement) {
+            var statusMsg = file.previewElement.querySelector('.sei-pro-upload-status');
+            if (statusMsg) {
+              statusMsg.textContent = '❌ Erro: ' + (typeof errorMessage === 'string' ? errorMessage : 'Falha no upload');
+              statusMsg.style.color = '#ef4444';
+            }
+          }
+        } catch(e){}
       });
     } catch(e){}
     try {
@@ -3269,6 +3781,7 @@
     } catch(e){}
     try {
       dz.on('sending', function(file, xhr, formData){
+        console.log('[SEIPro] 📤 Iniciando upload:', file && file.name);
         if (dz.__seiProUploadIdentifier) {
           var normalizedId = String(dz.__seiProUploadIdentifier).trim();
           if (normalizedId && !formData.has('UPLOAD_IDENTIFIER')) {
@@ -3281,12 +3794,62 @@
           url: dz.__seiProUploadUrl,
           formDataKeys: formData ? Array.from(formData.keys()) : []
         });
+        // Adicionar indicador visual de que o upload está em andamento
+        try {
+          if (file && file.previewElement) {
+            var statusMsg = file.previewElement.querySelector('.sei-pro-upload-status');
+            if (!statusMsg) {
+              statusMsg = document.createElement('div');
+              statusMsg.className = 'sei-pro-upload-status';
+              var details = file.previewElement.querySelector('.dz-details');
+              if (details && details.parentNode) {
+                details.parentNode.appendChild(statusMsg);
+              }
+            }
+            statusMsg.textContent = '📤 Enviando...';
+            statusMsg.style.cssText = 'grid-column:2;grid-row:3;color:#0d6efd;font-size:12px;font-weight:600;margin-top:4px;';
+          }
+        } catch(e){
+          console.warn('[SEIPro] Erro ao adicionar status visual', e);
+        }
+      });
+      dz.on('uploadprogress', function(file, progress, bytesSent){
+        console.debug('[SEIPro] 📊 Progresso upload:', file && file.name, progress.toFixed(0) + '%');
+        try {
+          if (file && file.previewElement) {
+            var statusMsg = file.previewElement.querySelector('.sei-pro-upload-status');
+            if (statusMsg) {
+              if (progress < 100) {
+                statusMsg.textContent = '📤 Enviando... ' + progress.toFixed(0) + '%';
+              } else {
+                statusMsg.textContent = '⏳ Processando no servidor...';
+              }
+            }
+          }
+        } catch(e){}
       });
       dz.on('success', function(file, response){
+        console.log('[SEIPro] ✅ Upload concluído:', file && file.name);
         logStep('ETAPA-5:upload_sucesso', { 
           file: file && file.name, 
           url: dz.__seiProUploadUrl 
         });
+        
+        // Atualizar status visual para sucesso
+        try {
+          if (file && file.previewElement) {
+            var statusMsg = file.previewElement.querySelector('.sei-pro-upload-status');
+            if (statusMsg) {
+              statusMsg.textContent = '✅ Upload concluído com sucesso!';
+              statusMsg.style.color = '#10b981';
+              setTimeout(function(){
+                if (statusMsg && statusMsg.parentNode) {
+                  statusMsg.remove();
+                }
+              }, 3000);
+            }
+          }
+        } catch(e){}
         
         try {
           // Obter parâmetros de salvamento configurados
@@ -3607,24 +4170,93 @@
       var host = overlay.__seiCreditsHost || overlay.querySelector('.sei-credits-card-wrapper');
       if (host) {
         if (typeof template.inject === 'function') {
-          template.inject(host, { onClose: closeCreditsOverlay });
+          template.inject(host, { onClose: function(){ closeCreditsOverlay(container); } });
         } else if (typeof template.getHtml === 'function') {
           host.innerHTML = template.getHtml();
           var closeBtn = host.querySelector('[data-sei-credits-close]');
-          if (closeBtn) closeBtn.addEventListener('click', closeCreditsOverlay);
+          if (closeBtn) closeBtn.addEventListener('click', function(){ closeCreditsOverlay(container); });
         }
       }
       overlay.classList.add('sei-credits-open');
       if (!overlay.__escHandler) {
-        overlay.__escHandler = function(ev){ if (ev.key === 'Escape') closeCreditsOverlay(); };
+        overlay.__escHandler = function(ev){ if (ev.key === 'Escape') closeCreditsOverlay(container); };
         document.addEventListener('keydown', overlay.__escHandler);
       }
+    }).catch(function(err){
+      console.warn('[SEIPro] Erro ao carregar template de créditos, usando fallback inline:', err);
+      renderCreditsInlineFallback(container);
     });
   }
 
+  function renderCreditsInlineFallback(container) {
+    if (!container) {
+      container = document.getElementById(FALLBACK_MODAL_ID);
+      if (!container) return;
+    }
+    
+    var overlay = getOrCreateCreditsOverlay(container);
+    var host = overlay.__seiCreditsHost || overlay.querySelector('.sei-credits-card-wrapper');
+    if (!host) return;
+
+    // HTML inline dos créditos com encoding correto
+    host.innerHTML = [
+      '<div class="sei-credits-card" role="dialog" aria-modal="true">',
+      '  <div class="sei-credits-header">',
+      '    <h3>🎉 Créditos - SEI Smart</h3>',
+      '    <button type="button" class="sei-credits-close" data-sei-credits-close>Fechar</button>',
+      '  </div>',
+      '  <div class="sei-credits-body">',
+      '    <div class="sei-credits-developer">',
+      '      <div class="sei-credits-avatar" aria-hidden="true">SF</div>',
+      '      <div class="sei-credits-info">',
+      '        <h4 class="sei-credits-name">Steferson Ferreira</h4>',
+      '        <p class="sei-credits-role">Desenvolvedor & Criador</p>',
+      '        <a class="sei-credits-contact" href="mailto:steferson.ferreira@gmail.com" target="_blank" rel="noopener">',
+      '          <span aria-hidden="true">✉️</span>',
+      '          <span>steferson.ferreira@gmail.com</span>',
+      '        </a>',
+      '      </div>',
+      '    </div>',
+      '    <div class="sei-credits-features">',
+      '      <div class="sei-credits-feature"><span aria-hidden="true">🤖</span><span>Geração automática de despachos com IA</span></div>',
+      '      <div class="sei-credits-feature"><span aria-hidden="true">📄</span><span>Modelos personalizados de documentos</span></div>',
+      '      <div class="sei-credits-feature"><span aria-hidden="true">🛠️</span><span>Ferramentas avançadas de formatação</span></div>',
+      '      <div class="sei-credits-feature"><span aria-hidden="true">📤</span><span>Upload inteligente de arquivos</span></div>',
+      '      <div class="sei-credits-feature"><span aria-hidden="true">📸</span><span>Captura automática de texto</span></div>',
+      '      <div class="sei-credits-feature"><span aria-hidden="true">⚡</span><span>Interface otimizada e intuitiva</span></div>',
+      '    </div>',
+      '    <div class="sei-credits-footer">',
+      '      <span class="sei-credits-version">Versão 1.0.0</span>',
+      '      <span class="sei-credits-copy">© 2025 SEI Smart. Todos os direitos reservados.</span>',
+      '    </div>',
+      '  </div>',
+      '</div>'
+    ].join('');
+
+    var closeBtn = host.querySelector('[data-sei-credits-close]');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function(){ closeCreditsOverlay(container); });
+    }
+
+    overlay.classList.add('sei-credits-open');
+    if (!overlay.__escHandler) {
+      overlay.__escHandler = function(ev){ if (ev.key === 'Escape') closeCreditsOverlay(container); };
+      document.addEventListener('keydown', overlay.__escHandler);
+    }
+  }
+
   function closeCreditsOverlay(container) {
-    if (!container) return;
-    var overlay = container.querySelector('.sei-credits-overlay');
+    var overlay = null;
+    if (container) {
+      overlay = container.querySelector('.sei-credits-overlay');
+    }
+    if (!overlay) {
+      overlay = document.getElementById('sei-global-credits-overlay');
+    }
+    if (!overlay) {
+      // Tentar encontrar qualquer overlay de créditos aberto
+      overlay = document.querySelector('.sei-credits-overlay.sei-credits-open');
+    }
     if (overlay) {
       overlay.classList.remove('sei-credits-open');
       if (overlay.__escHandler) {
@@ -3684,8 +4316,23 @@
       try {
         var script = document.createElement('script');
         script.src = resolveExtensionUrl('credits-template.js');
-        script.onload = function(){ resolve(window.SeiCreditsTemplate || null); };
-        script.onerror = function(err){ creditsTemplatePromise = null; reject(err || new Error('Falha ao carregar template de créditos')); };
+        script.charset = 'UTF-8';
+        script.type = 'text/javascript';
+        script.onload = function(){ 
+          // Aguardar um pouco para garantir que o script foi executado
+          setTimeout(function(){
+            if (window.SeiCreditsTemplate && typeof window.SeiCreditsTemplate.getHtml === 'function') {
+              resolve(window.SeiCreditsTemplate);
+            } else {
+              creditsTemplatePromise = null;
+              reject(new Error('Template não disponível após carregamento'));
+            }
+          }, 50);
+        };
+        script.onerror = function(err){ 
+          creditsTemplatePromise = null; 
+          reject(err || new Error('Falha ao carregar template de créditos')); 
+        };
         (document.head || document.documentElement).appendChild(script);
       } catch(e) {
         creditsTemplatePromise = null;
